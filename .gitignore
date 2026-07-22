@@ -1,0 +1,12 @@
+data/
+artifacts/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.venv/
+.env.local
+csbi/model/artifacts/

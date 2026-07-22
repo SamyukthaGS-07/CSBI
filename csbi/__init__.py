@@ -1,0 +1,1 @@
+"""CSBI scam detection package."""

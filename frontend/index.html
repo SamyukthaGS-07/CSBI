@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CSBI Scam Detection</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">CSBI Scam Detection</p>
+        <h1>Scan a URL and surface the risk story.</h1>
+        <p class="lede">Enter a link, inspect score, reasons, and cluster tag.</p>
+      </section>
+
+      <section class="panel">
+        <label for="url">URL</label>
+        <div class="row">
+          <input id="url" type="url" placeholder="https://example.com" />
+          <button id="scan">Scan</button>
+        </div>
+        <div class="results">
+          <div><span>Score</span><strong id="score">-</strong></div>
+          <div><span>Risk</span><strong id="risk">-</strong></div>
+          <div><span>Cluster</span><strong id="cluster">-</strong></div>
+        </div>
+        <ol id="reasons"></ol>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

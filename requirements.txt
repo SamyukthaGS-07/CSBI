@@ -1,0 +1,25 @@
+# config / runtime
+python-dotenv
+pydantic
+
+# extraction
+requests
+beautifulsoup4
+lxml
+python-whois
+pyzbar
+Pillow
+
+# scoring / analytics
+numpy
+pandas
+scikit-learn
+xgboost
+shap
+
+# backend
+fastapi
+uvicorn[standard]
+
+# testing
+pytest
