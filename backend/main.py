@@ -1,18 +1,45 @@
-from __future__ import annotations
-
 from fastapi import FastAPI
-from pydantic import BaseModel, HttpUrl
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from csbi.pipeline import run_pipeline
+app = FastAPI(title="CSBI Scam Detector")
 
-app = FastAPI(title="CSBI Scam Detection API")
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ScanRequest(BaseModel):
-    url: HttpUrl
+    url: str
 
+class ScanResponse(BaseModel):
+    url: str
+    trust_score: int
+    risk_level: str
+    scam_probability: float
+    csbi: float
+    reasons: list[str]
+    cluster_tag: str | None
 
-@app.post("/scan")
-def scan(request: ScanRequest) -> dict[str, object]:
-    record = run_pipeline(str(request.url))
-    return record.to_dict()
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+@app.post("/scan", response_model=ScanResponse)
+def scan(req: ScanRequest):
+    # STUB — replaced with the real pipeline in Step 6
+    return ScanResponse(
+        url=req.url,
+        trust_score=32,
+        risk_level="HIGH",
+        scam_probability=0.68,
+        csbi=65.0,
+        reasons=[
+            "Domain registered 3 days ago",
+            "Brand impersonation: PayPal",
+            "Urgency language detected",
+        ],
+        cluster_tag="Cluster #4 — fake government-subsidy template",
+    )
