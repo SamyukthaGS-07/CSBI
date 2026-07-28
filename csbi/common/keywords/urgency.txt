@@ -1,4 +1,26 @@
+# Urgency / pressure language (Layer 3). Lowercase phrases.
+act now
+immediately
 urgent
-immediate
-verify now
+expires today
+expires soon
 limited time
+last chance
+final notice
+account suspended
+account blocked
+verify now
+verify immediately
+kyc pending
+kyc expired
+update kyc
+within 24 hours
+within 24 hrs
+your account will be
+failure to
+avoid suspension
+click here now
+claim now
+hurry
+don't delay
+do not delay

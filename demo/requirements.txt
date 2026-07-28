@@ -1,0 +1,9 @@
+# Demo app (in addition to the Module A requirements.txt at repo root)
+streamlit>=1.30
+plotly>=5.18
+# Module C (Varshan's clustering) needs:
+scikit-learn>=1.3
+pandas>=2.0
+numpy>=1.24
+matplotlib>=3.7
+# (beautifulsoup4, lxml, tldextract already in root requirements.txt)

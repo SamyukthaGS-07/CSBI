@@ -1,4 +1,37 @@
-brand
-company
-official
-support
+# Brand names commonly impersonated in Indian UPI / phishing scams.
+# One per line, lowercase. Layer 3 flags a mismatch when a brand appears in
+# page text/title but not in the registrable domain. Version-controlled.
+google pay
+googlepay
+gpay
+phonepe
+paytm
+bhim
+amazon pay
+sbi
+state bank of india
+hdfc
+icici
+axis
+kotak
+punjab national bank
+pnb
+canara
+bank of baroda
+yes bank
+rbi
+reserve bank of india
+npci
+irctc
+lic
+epfo
+income tax
+gst
+aadhaar
+uidai
+flipkart
+amazon
+myntra
+jio
+airtel
+vodafone idea

@@ -1,25 +1,16 @@
-# config / runtime
-python-dotenv
-pydantic
-
-# extraction
-requests
-beautifulsoup4
-lxml
-python-whois
-pyzbar
-Pillow
-
-# scoring / analytics
-numpy
-pandas
-scikit-learn
-xgboost
-shap
-
-# backend
-fastapi
-uvicorn[standard]
-
-# testing
+# ---- shared ----
 pytest
+
+# ---- Module A: Feature Extraction & Scoring (Samyuktha) ----
+requests            # fetch.py: HTTP
+beautifulsoup4      # Layer 3: HTML parsing, brand mismatch
+lxml                # bs4 parser backend
+tldextract          # Layer 1: subdomain / registrable-domain split
+python-whois        # Layer 2: domain age
+cryptography        # Layer 2: SSL certificate parsing / age
+spacy               # Layer 3/4: urgency + subsidy language patterns
+opencv-python       # Layer 4: QR / emblem detection
+pyzbar              # Layer 4: QR decode
+# spaCy model (install separately): python -m spacy download en_core_web_sm
+
+# ---- Module B / C deps live in their own sections when those land ----
