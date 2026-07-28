@@ -15,8 +15,8 @@ Design choices:
 
 Typical use
 -----------
-    from csbi.common.store import ScanStore
-    from csbi.common.schema import ScanRecord
+    from common.store import ScanStore
+    from common.schema import ScanRecord
 
     store = ScanStore()                       # default path from config.settings
     store.write(ScanRecord(url="http://x").validate())
@@ -32,7 +32,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Iterable, Iterator, Optional
 
-from csbi.common.schema import ScanRecord
+from common.schema import ScanRecord
 
 try:
     from config.settings import STORE_PATH as _DEFAULT_STORE_PATH

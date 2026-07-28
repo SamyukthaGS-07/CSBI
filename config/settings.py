@@ -19,7 +19,7 @@ STORE_DIR = DATA_DIR / "store"
 STORE_PATH = STORE_DIR / "scans.db"
 
 # Keyword lists (Module A owns; version-controlled).
-KEYWORDS_DIR = ROOT / "csbi" / "common" / "keywords"
+KEYWORDS_DIR = ROOT / "common" / "keywords"
 
 # ---- Risk thresholds (Module B consumes; kept here so they're shared) --------
 # Applied to scam_probability -> risk_level. Confirm bands against Blueprint §4.3.

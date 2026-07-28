@@ -25,7 +25,7 @@ from __future__ import annotations
 import datetime as dt
 from typing import Optional
 
-from csbi.extraction.fetch import FetchResult
+from module3_behavioral.extraction.fetch import FetchResult
 
 
 def _as_naive(d: Optional[dt.datetime]) -> Optional[dt.datetime]:

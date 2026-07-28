@@ -37,8 +37,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from csbi.extraction.extractor import extract_features
-from csbi.common.store import ScanStore
+from module3_behavioral.extraction.extractor import extract_features
+from common.store import ScanStore
 
 
 # --------------------------------------------------------------------------- #

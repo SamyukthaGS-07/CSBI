@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-demo/build_cache.py
-===================
-Pre-computes the demo cache so the Streamlit app is instant and offline-capable.
+module6_delivery/build_cache.py
+================================
+Orchestrator: pre-computes the demo cache by calling each module in the
+pipeline, so the Streamlit app (Module 6) is instant and offline-capable.
 
-It runs the REAL pipeline end to end:
-  1. Module A  — your extract_features on each curated page (seeded fetch, so no
-                 network needed, but every layer computes for real).
-  2. Module B  — a rule-based verdict + top-3 reasons from the real feature values
-                 (stand-in until the trained model lands; clearly labelled).
-  3. Module C  — Varshan's real fingerprint -> similarity -> DBSCAN -> label ->
-                 evaluate pipeline on the resulting records.
+Calls, in order:
+  Module 3 (module3_behavioral) — CSBI feature extraction (seeded fetch here,
+                                  real network fetch in production).
+  Module 2 (module2_screening)  — Stage-1 infra routing decision.
+  Module 5 (module5_decision)   — verdict + top reasons (rule-based stand-in
+                                  until the trained classifier lands).
+  Module 4 (module4_clustering) — Varshan's real campaign clustering.
 
-Output: demo/demo_cache.json  (everything the app needs, keyed by URL).
-
-Run once:  python demo/build_cache.py
+Output: module6_delivery/demo_cache.json
+Run once: python module6_delivery/build_cache.py
 """
 
 import sys
@@ -23,19 +23,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "module_c"))
+sys.path.insert(0, str(ROOT / "module4_clustering"))
 
-from csbi.extraction.extractor import extract_features
-from csbi.extraction.fetch import FetchResult, ip_block
-from demo.demo_sites import SITES
+from module3_behavioral.extraction.extractor import extract_features
+from module3_behavioral.extraction.fetch import FetchResult, ip_block
+from module6_delivery.demo_sites import SITES
 
 # Varshan's real Module C
-from module_c.clustering.fingerprint import build_fingerprint
-from module_c.clustering.html_similarity import compute_similarity_matrix
-from module_c.clustering.distance_matrix import create_distance_matrix
-from module_c.clustering.dbscan_cluster import perform_clustering
-from module_c.clustering.label_cluster import label_clusters
-from module_c.clustering.evaluation import ClusterEvaluator
+from module4_clustering.clustering.fingerprint import build_fingerprint
+from module4_clustering.clustering.html_similarity import compute_similarity_matrix
+from module4_clustering.clustering.distance_matrix import create_distance_matrix
+from module4_clustering.clustering.dbscan_cluster import perform_clustering
+from module4_clustering.clustering.label_cluster import label_clusters
+from module4_clustering.clustering.evaluation import ClusterEvaluator
 
 
 # --------------------------------------------------------------------------- #
@@ -59,41 +59,10 @@ def seeded_asn(site):
 # --------------------------------------------------------------------------- #
 # Module B: rule-based verdict + top-3 reasons from REAL features              #
 # --------------------------------------------------------------------------- #
-REASON_RULES = [
-    ("brand_mismatch", lambda f: f.get("brand_mismatch") == 1,
-     lambda f: "Impersonates a known brand not reflected in the domain", 30),
-    ("upi_field_presence", lambda f: f.get("upi_field_presence") == 1,
-     lambda f: "Collects a UPI payment ID directly on the page", 25),
-    ("fake_gov_qr", lambda f: f.get("fake_gov_qr_score", 0) >= 0.9,
-     lambda f: "Displays a QR alongside fake government branding", 22),
-    ("subsidy_bait", lambda f: f.get("subsidy_refund_language_score", 0) >= 0.5,
-     lambda f: "Uses subsidy / refund / cashback bait language", 20),
-    ("urgency", lambda f: f.get("urgency_language_score", 0) >= 0.5,
-     lambda f: "Pressures the visitor with urgency / threat language", 18),
-    ("young_domain", lambda f: 0 < f.get("domain_age_days", 9999) <= 30,
-     lambda f: f"Domain registered only {int(f.get('domain_age_days',0))} days ago", 24),
-    ("ext_scripts", lambda f: f.get("external_script_ratio", 0) >= 0.3,
-     lambda f: "Loads a high ratio of third-party scripts", 10),
-    ("no_https", lambda f: f.get("https") == 0,
-     lambda f: "Served without HTTPS", 15),
-]
+from module2_screening.stage1_routing import stage1_routing
 
 
-def verdict_and_reasons(record):
-    """Heuristic scam probability + risk + top-3 reasons from real features.
-    Stands in for Module B's trained model; every input is a real measured value."""
-    f = record["features"]
-    csbi = record["CSBI"] or 0.0
-
-    fired = [(w, msg(f)) for _, cond, msg, w in REASON_RULES if cond(f)]
-    fired.sort(key=lambda x: -x[0])
-    top3 = [msg for _, msg in fired[:3]]
-
-    # probability: blend of behavioural evidence and the CSBI contradiction
-    behaviour = min(sum(w for w, _ in fired) / 80.0, 1.0)
-    prob = round(min(0.05 + 0.6 * behaviour + 0.35 * (csbi / 100.0), 0.99), 3)
-    risk = "HIGH" if prob >= 0.66 else "MEDIUM" if prob >= 0.33 else "LOW"
-    return prob, risk, (top3 or ["No strong scam signals detected"])
+from module5_decision.verdict_rules import verdict_and_reasons
 
 
 # --------------------------------------------------------------------------- #
@@ -102,7 +71,7 @@ def build():
     records = []          # for the app (rich, includes features + layer detail)
     c_input = []          # for Varshan's pipeline (his expected field names)
 
-    import csbi.extraction.fetch as fetchmod
+    import module3_behavioral.extraction.fetch as fetchmod
     for site in SITES:
         fetchmod.get_asn = seeded_asn(site)   # seed ASN for this site
         rec = extract_features(site["url"], store=None, fetch_fn=seeded_fetch(site))
@@ -119,6 +88,12 @@ def build():
         d["traditional_safe"] = bool(fx["https"] == 1 and fx["is_ip_domain"] == 0
                                      and fx["special_char_ratio"] <= 0.15
                                      and fx["subdomain_count"] <= 1)
+        d.update(stage1_routing(site["url"], fx))
+        if not d["routed_to_stage2"]:
+            # Stage 1 resolved it directly — reflect that verdict in the demo
+            d["risk_level"] = d["stage1_verdict"]
+            d["scam_probability"] = 0.92 if d["stage1_verdict"] == "HIGH" else 0.03
+            d["top3_reasons"] = [d["route_reason"]]
         records.append(d)
 
         c_input.append({
@@ -176,7 +151,7 @@ def build():
         "clusters": list(clusters.values()),
         "evaluation": evaluation,
     }
-    dest = ROOT / "demo" / "demo_cache.json"
+    dest = ROOT / "module6_delivery" / "demo_cache.json"
     dest.write_text(json.dumps(out, indent=2, default=str), encoding="utf-8")
     print(f"\nwrote {dest}")
 

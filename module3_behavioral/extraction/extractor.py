@@ -27,14 +27,14 @@ from typing import Callable, Optional
 
 from bs4 import BeautifulSoup
 
-from csbi.common.schema import ScanRecord
-from csbi.extraction import fetch as fetch_mod
-from csbi.extraction import layer1_structural as l1
-from csbi.extraction import layer2_temporal as l2
-from csbi.extraction import layer3_behavioral as l3
-from csbi.extraction import layer4_upi as l4
-from csbi.scoring.trust_scores import all_trust_scores
-from csbi.scoring.csbi import compute_csbi
+from common.schema import ScanRecord
+from module3_behavioral.extraction import fetch as fetch_mod
+from module3_behavioral.extraction import layer1_structural as l1
+from module3_behavioral.extraction import layer2_temporal as l2
+from module3_behavioral.extraction import layer3_behavioral as l3
+from module3_behavioral.extraction import layer4_upi as l4
+from module3_behavioral.scoring.trust_scores import all_trust_scores
+from module3_behavioral.scoring.csbi import compute_csbi
 
 
 def dom_tag_sequence_hash(html: str) -> Optional[str]:

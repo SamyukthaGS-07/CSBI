@@ -19,7 +19,7 @@ import plotly.graph_objects as go
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-CACHE_PATH = ROOT / "demo" / "demo_cache.json"
+CACHE_PATH = ROOT / "module6_delivery" / "demo_cache.json"
 
 st.set_page_config(page_title="CSBI · Is this site safe?", page_icon="🛡️", layout="centered")
 
@@ -121,13 +121,13 @@ def scroll_to_anchor(anchor_id="csbi_anchor"):
 def load_cache():
     if not CACHE_PATH.exists():
         import subprocess
-        subprocess.run([sys.executable, str(ROOT / "demo" / "build_cache.py")], check=True)
+        subprocess.run([sys.executable, str(ROOT / "module6_delivery" / "build_cache.py")], check=True)
     return json.loads(CACHE_PATH.read_text(encoding="utf-8"))
 
 
 def live_scan(url):
-    from csbi.extraction.extractor import extract_features
-    from demo.build_cache import verdict_and_reasons
+    from module3_behavioral.extraction.extractor import extract_features
+    from module5_decision.verdict_rules import verdict_and_reasons
     rec = extract_features(url, store=None)
     d = rec.to_dict()
     d["campaign_true"] = "Live scan"; d["ground_truth"] = "unknown"
@@ -140,6 +140,12 @@ def live_scan(url):
                                  and fx["special_char_ratio"] <= 0.15 and fx["subdomain_count"] <= 1)
     d["html_preview"] = "(live page not stored)"
     d["cluster_id"] = -1; d["cluster_label"] = "n/a (single live scan)"
+    from module2_screening.stage1_routing import stage1_routing
+    d.update(stage1_routing(url, fx))
+    if not d["routed_to_stage2"]:
+        d["risk_level"] = d["stage1_verdict"]
+        d["scam_probability"] = 0.92 if d["stage1_verdict"] == "HIGH" else 0.03
+        d["top3_reasons"] = [d["route_reason"]]
     return d
 
 
@@ -160,6 +166,28 @@ def gauge(v):
                       paper_bgcolor="#ffffff", plot_bgcolor="#ffffff",
                       font=dict(color="#0f172a"))
     return fig
+
+
+def render_stage1(rec):
+    """Stage 1: the cheap infrastructure screen every site passes through first."""
+    routed = rec.get("routed_to_stage2", True)
+    is_fh = rec.get("is_free_hosting", False)
+    reason = rec.get("route_reason", "")
+    if routed:
+        st.markdown(f"""<div class="card" style="border-left:4px solid var(--brand)">
+          <div class="small" style="margin-bottom:4px">STAGE 1 · Infrastructure Screening</div>
+          <div style="font-weight:700;color:var(--ink)">🔀 Escalating to Stage 2</div>
+          <div style="margin-top:4px;color:#334155">{reason}</div>
+        </div>""", unsafe_allow_html=True)
+    else:
+        verdict = rec.get("stage1_verdict", "LOW")
+        col = RISKC.get(verdict, "#64748b")
+        st.markdown(f"""<div class="card" style="border-left:4px solid {col}">
+          <div class="small" style="margin-bottom:4px">STAGE 1 · Infrastructure Screening</div>
+          <div style="font-weight:700;color:{col}">✅ Resolved directly — {verdict} risk</div>
+          <div style="margin-top:4px;color:#334155">{reason}</div>
+          <div class="small" style="margin-top:6px">Own, distinctive infrastructure — no need to fetch or analyse the page. Stage 2 skipped.</div>
+        </div>""", unsafe_allow_html=True)
 
 
 def render_header(rec):
@@ -319,25 +347,37 @@ with tab_scan:
 
     rec = st.session_state.get("rec")
     if not rec:
-        st.info("Pick a site and press **Check this site**. The four detection layers run one by one, "
-                "then combine into the CSBI verdict.")
+        st.info("Pick a site and press **Check this site**. Stage 1 screens the infrastructure "
+                "first; only sites it can't resolve escalate to the deep behavioural analysis.")
     else:
-        render_header(rec)
-        checks_row(rec["features"])
-        step = st.session_state.get("step", 4)
-        shown = min(step, 4) if st.session_state.get("analyzing") else 4
-        for i in range(shown):
-            render_layer(i, rec)
-        st.markdown('<div id="csbi_anchor"></div>', unsafe_allow_html=True)
-        if st.session_state.get("analyzing") and step < 4:
-            st.markdown(f'<div class="small working">Running Layer {step+1}…</div>', unsafe_allow_html=True)
-            scroll_to_anchor("csbi_anchor")     # follow the reveal downward, gradually
-            time.sleep(1.4)
-            st.session_state["step"] = step + 1
-            st.rerun()
-        else:
+        render_stage1(rec)
+        if not rec.get("routed_to_stage2", True):
+            # Stage 1 resolved it directly — show its verdict, skip Stage 2 entirely
+            render_header(rec)
             st.session_state["analyzing"] = False
-            render_verdict(rec)
+            with st.expander("Run Stage 2 anyway (for comparison)"):
+                st.caption("Not needed for the verdict above — shown only to confirm Stage 2 "
+                          "agrees when infrastructure already resolved the case.")
+                checks_row(rec["features"])
+                for i in range(4):
+                    render_layer(i, rec)
+        else:
+            render_header(rec)
+            checks_row(rec["features"])
+            step = st.session_state.get("step", 4)
+            shown = min(step, 4) if st.session_state.get("analyzing") else 4
+            for i in range(shown):
+                render_layer(i, rec)
+            st.markdown('<div id="csbi_anchor"></div>', unsafe_allow_html=True)
+            if st.session_state.get("analyzing") and step < 4:
+                st.markdown(f'<div class="small working">Running Layer {step+1}…</div>', unsafe_allow_html=True)
+                scroll_to_anchor("csbi_anchor")     # follow the reveal downward, gradually
+                time.sleep(1.4)
+                st.session_state["step"] = step + 1
+                st.rerun()
+            else:
+                st.session_state["analyzing"] = False
+                render_verdict(rec)
 
 with tab_camp:
     ev = CACHE["evaluation"]

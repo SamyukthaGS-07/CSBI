@@ -26,7 +26,7 @@ from bs4 import BeautifulSoup
 try:
     from config.settings import KEYWORDS_DIR
 except Exception:
-    KEYWORDS_DIR = Path("csbi/common/keywords")
+    KEYWORDS_DIR = Path("common/keywords")
 
 try:
     import tldextract

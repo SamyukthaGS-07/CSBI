@@ -1,4 +1,7 @@
-﻿[theme]
+# Force light theme regardless of the visitor's OS/browser dark-mode setting.
+# Without this, Streamlit auto-switches to dark mode and our light custom CSS
+# cards clash with dark default text/chart colors (invisible text, black charts).
+[theme]
 base = "light"
 primaryColor = "#2563eb"
 backgroundColor = "#f4f6fb"

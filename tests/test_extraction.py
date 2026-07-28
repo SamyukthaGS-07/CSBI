@@ -16,16 +16,16 @@ import datetime as dt
 
 import pytest
 
-from csbi.extraction import layer1_structural as l1
-from csbi.extraction import layer2_temporal as l2
-from csbi.extraction import layer3_behavioral as l3
-from csbi.extraction import layer4_upi as l4
-from csbi.extraction import fetch
-from csbi.extraction.fetch import FetchResult
-from csbi.extraction.extractor import extract_features, dom_tag_sequence_hash
-from csbi.scoring import trust_scores as ts
-from csbi.scoring.csbi import compute_csbi
-from csbi.common.store import ScanStore
+from module3_behavioral.extraction import layer1_structural as l1
+from module3_behavioral.extraction import layer2_temporal as l2
+from module3_behavioral.extraction import layer3_behavioral as l3
+from module3_behavioral.extraction import layer4_upi as l4
+from module3_behavioral.extraction import fetch
+from module3_behavioral.extraction.fetch import FetchResult
+from module3_behavioral.extraction.extractor import extract_features, dom_tag_sequence_hash
+from module3_behavioral.scoring import trust_scores as ts
+from module3_behavioral.scoring.csbi import compute_csbi
+from common.store import ScanStore
 
 NOW = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
 
@@ -211,7 +211,7 @@ def test_ip_block_derivation():
 
 def test_asn_lookup_populates_record(monkeypatch):
     """extract_features must fill asn/hosting_provider/ip_block for Module C."""
-    monkeypatch.setattr("csbi.extraction.fetch.get_asn",
+    monkeypatch.setattr("module3_behavioral.extraction.fetch.get_asn",
                         lambda ip, timeout=6: ("AS13335", "Cloudflare, Inc."))
     rec = extract_features(LEGIT_URL, fetch_fn=_fake_fetch(LEGIT_HTML))
     assert rec.asn == "AS13335"
@@ -220,7 +220,7 @@ def test_asn_lookup_populates_record(monkeypatch):
 
 
 def test_asn_failure_does_not_break_scan(monkeypatch):
-    monkeypatch.setattr("csbi.extraction.fetch.get_asn",
+    monkeypatch.setattr("module3_behavioral.extraction.fetch.get_asn",
                         lambda ip, timeout=6: (None, None))
     rec = extract_features(LEGIT_URL, fetch_fn=_fake_fetch(LEGIT_HTML))
     assert rec.asn is None and rec.CSBI is not None   # scan still completes

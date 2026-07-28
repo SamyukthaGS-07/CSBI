@@ -7,8 +7,8 @@ Expected values are hand-computed in comments so a reviewer can trace every one.
 
 import pytest
 
-from csbi.scoring import trust_scores as ts
-from csbi.scoring.csbi import compute_csbi, credibility, substance
+from module3_behavioral.scoring import trust_scores as ts
+from module3_behavioral.scoring.csbi import compute_csbi, credibility, substance
 
 
 # --- CSBI aggregator (§4.2) --------------------------------------------------

@@ -2,7 +2,7 @@
   "records": [
     {
       "url": "https://instant-reward-claim.pages.dev/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "104.21.5.11",
       "asn": "AS13335",
@@ -66,6 +66,10 @@
         "ssl_issuer": "Let's Encrypt"
       },
       "traditional_safe": true,
+      "is_free_hosting": true,
+      "routed_to_stage2": true,
+      "route_reason": "Shared free-hosting platform \u2014 certificate & IP belong to the platform, not this site. Escalating to Stage 2.",
+      "stage1_verdict": null,
       "ip_block": "104.21.5.0/24",
       "_fingerprint": {
         "ASN": 13335,
@@ -78,7 +82,7 @@
     },
     {
       "url": "https://festive-cashback-portal.pages.dev/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "104.21.5.42",
       "asn": "AS13335",
@@ -142,6 +146,10 @@
         "ssl_issuer": "Let's Encrypt"
       },
       "traditional_safe": true,
+      "is_free_hosting": true,
+      "routed_to_stage2": true,
+      "route_reason": "Shared free-hosting platform \u2014 certificate & IP belong to the platform, not this site. Escalating to Stage 2.",
+      "stage1_verdict": null,
       "ip_block": "104.21.5.0/24",
       "_fingerprint": {
         "ASN": 13335,
@@ -154,7 +162,7 @@
     },
     {
       "url": "https://mega-reward-2026.pages.dev/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "104.21.5.88",
       "asn": "AS13335",
@@ -218,6 +226,10 @@
         "ssl_issuer": "Let's Encrypt"
       },
       "traditional_safe": false,
+      "is_free_hosting": true,
+      "routed_to_stage2": true,
+      "route_reason": "Shared free-hosting platform \u2014 certificate & IP belong to the platform, not this site. Escalating to Stage 2.",
+      "stage1_verdict": null,
       "ip_block": "104.21.5.0/24",
       "_fingerprint": {
         "ASN": 13335,
@@ -230,7 +242,7 @@
     },
     {
       "url": "https://claim-your-bonus.pages.dev/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "104.21.5.130",
       "asn": "AS13335",
@@ -294,6 +306,10 @@
         "ssl_issuer": "Let's Encrypt"
       },
       "traditional_safe": true,
+      "is_free_hosting": true,
+      "routed_to_stage2": true,
+      "route_reason": "Shared free-hosting platform \u2014 certificate & IP belong to the platform, not this site. Escalating to Stage 2.",
+      "stage1_verdict": null,
       "ip_block": "104.21.5.0/24",
       "_fingerprint": {
         "ASN": 13335,
@@ -306,7 +322,7 @@
     },
     {
       "url": "https://subsidy-disbursement.web.app/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "142.250.4.20",
       "asn": "AS15169",
@@ -368,6 +384,10 @@
         "ssl_issuer": "Google Trust Services"
       },
       "traditional_safe": true,
+      "is_free_hosting": true,
+      "routed_to_stage2": true,
+      "route_reason": "Shared free-hosting platform \u2014 certificate & IP belong to the platform, not this site. Escalating to Stage 2.",
+      "stage1_verdict": null,
       "ip_block": "142.250.4.0/24",
       "_fingerprint": {
         "ASN": 15169,
@@ -380,7 +400,7 @@
     },
     {
       "url": "https://benefit-transfer-portal.web.app/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "142.250.4.55",
       "asn": "AS15169",
@@ -443,6 +463,10 @@
         "ssl_issuer": "Google Trust Services"
       },
       "traditional_safe": true,
+      "is_free_hosting": true,
+      "routed_to_stage2": true,
+      "route_reason": "Shared free-hosting platform \u2014 certificate & IP belong to the platform, not this site. Escalating to Stage 2.",
+      "stage1_verdict": null,
       "ip_block": "142.250.4.0/24",
       "_fingerprint": {
         "ASN": 15169,
@@ -455,7 +479,7 @@
     },
     {
       "url": "https://yojana-verify-portal.web.app/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "142.250.4.90",
       "asn": "AS15169",
@@ -518,6 +542,10 @@
         "ssl_issuer": "Google Trust Services"
       },
       "traditional_safe": true,
+      "is_free_hosting": true,
+      "routed_to_stage2": true,
+      "route_reason": "Shared free-hosting platform \u2014 certificate & IP belong to the platform, not this site. Escalating to Stage 2.",
+      "stage1_verdict": null,
       "ip_block": "142.250.4.0/24",
       "_fingerprint": {
         "ASN": 15169,
@@ -530,7 +558,7 @@
     },
     {
       "url": "https://housing-benefit-claim.web.app/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "142.250.4.144",
       "asn": "AS15169",
@@ -592,6 +620,10 @@
         "ssl_issuer": "Google Trust Services"
       },
       "traditional_safe": true,
+      "is_free_hosting": true,
+      "routed_to_stage2": true,
+      "route_reason": "Shared free-hosting platform \u2014 certificate & IP belong to the platform, not this site. Escalating to Stage 2.",
+      "stage1_verdict": null,
       "ip_block": "142.250.4.0/24",
       "_fingerprint": {
         "ASN": 15169,
@@ -604,7 +636,7 @@
     },
     {
       "url": "https://secure-account-verify.com/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "52.95.1.10",
       "asn": "AS16509",
@@ -643,13 +675,11 @@
       "T3": 0.25,
       "T4": 0.6,
       "CSBI": 6.89,
-      "scam_probability": 0.674,
+      "scam_probability": 0.92,
       "trust_score": null,
       "risk_level": "HIGH",
       "top3_reasons": [
-        "Impersonates a known brand not reflected in the domain",
-        "Collects a UPI payment ID directly on the page",
-        "Domain registered only 8 days ago"
+        "Own infrastructure, domain registered only 8 days ago \u2014 HIGH risk."
       ],
       "cluster_id": 2,
       "cluster_label": "Amazon.com, Inc. Infrastructure Campaign",
@@ -664,6 +694,10 @@
         "ssl_issuer": "Amazon"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, domain registered only 8 days ago \u2014 HIGH risk.",
+      "stage1_verdict": "HIGH",
       "ip_block": "52.95.1.0/24",
       "_fingerprint": {
         "ASN": 16509,
@@ -676,7 +710,7 @@
     },
     {
       "url": "https://netbanking-secure-login.com/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "52.95.1.44",
       "asn": "AS16509",
@@ -715,13 +749,11 @@
       "T3": 0.25,
       "T4": 0.6,
       "CSBI": 6.45,
-      "scam_probability": 0.673,
+      "scam_probability": 0.92,
       "trust_score": null,
       "risk_level": "HIGH",
       "top3_reasons": [
-        "Impersonates a known brand not reflected in the domain",
-        "Collects a UPI payment ID directly on the page",
-        "Domain registered only 5 days ago"
+        "Own infrastructure, domain registered only 5 days ago \u2014 HIGH risk."
       ],
       "cluster_id": 2,
       "cluster_label": "Amazon.com, Inc. Infrastructure Campaign",
@@ -736,6 +768,10 @@
         "ssl_issuer": "Amazon"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, domain registered only 5 days ago \u2014 HIGH risk.",
+      "stage1_verdict": "HIGH",
       "ip_block": "52.95.1.0/24",
       "_fingerprint": {
         "ASN": 16509,
@@ -748,7 +784,7 @@
     },
     {
       "url": "https://account-safety-check.com/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "52.95.1.77",
       "asn": "AS16509",
@@ -787,13 +823,11 @@
       "T3": 0.25,
       "T4": 0.6,
       "CSBI": 7.28,
-      "scam_probability": 0.675,
+      "scam_probability": 0.92,
       "trust_score": null,
       "risk_level": "HIGH",
       "top3_reasons": [
-        "Impersonates a known brand not reflected in the domain",
-        "Collects a UPI payment ID directly on the page",
-        "Domain registered only 11 days ago"
+        "Own infrastructure, domain registered only 11 days ago \u2014 HIGH risk."
       ],
       "cluster_id": 2,
       "cluster_label": "Amazon.com, Inc. Infrastructure Campaign",
@@ -808,6 +842,10 @@
         "ssl_issuer": "Amazon"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, domain registered only 11 days ago \u2014 HIGH risk.",
+      "stage1_verdict": "HIGH",
       "ip_block": "52.95.1.0/24",
       "_fingerprint": {
         "ASN": 16509,
@@ -820,7 +858,7 @@
     },
     {
       "url": "https://www.onlinesbi.sbi/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "163.53.78.20",
       "asn": "AS9829",
@@ -854,11 +892,11 @@
       "T3": 1.0,
       "T4": 1.0,
       "CSBI": 0.0,
-      "scam_probability": 0.05,
+      "scam_probability": 0.03,
       "trust_score": null,
       "risk_level": "LOW",
       "top3_reasons": [
-        "No strong scam signals detected"
+        "Own infrastructure, established domain (7300 days) \u2014 LOW risk."
       ],
       "cluster_id": -1,
       "cluster_label": "Unclustered (likely legitimate)",
@@ -873,6 +911,10 @@
         "ssl_issuer": "DigiCert"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, established domain (7300 days) \u2014 LOW risk.",
+      "stage1_verdict": "LOW",
       "ip_block": "163.53.78.0/24",
       "_fingerprint": {
         "ASN": 9829,
@@ -885,7 +927,7 @@
     },
     {
       "url": "https://www.rbi.org.in/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "14.140.1.50",
       "asn": "AS4755",
@@ -919,11 +961,11 @@
       "T3": 0.6,
       "T4": 0.925,
       "CSBI": 10.2,
-      "scam_probability": 0.311,
+      "scam_probability": 0.03,
       "trust_score": null,
       "risk_level": "LOW",
       "top3_reasons": [
-        "Impersonates a known brand not reflected in the domain"
+        "Own infrastructure, established domain (9000 days) \u2014 LOW risk."
       ],
       "cluster_id": -1,
       "cluster_label": "Unclustered (likely legitimate)",
@@ -938,6 +980,10 @@
         "ssl_issuer": "Sectigo"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, established domain (9000 days) \u2014 LOW risk.",
+      "stage1_verdict": "LOW",
       "ip_block": "14.140.1.0/24",
       "_fingerprint": {
         "ASN": 4755,
@@ -950,7 +996,7 @@
     },
     {
       "url": "https://www.amazon.in/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "52.95.116.10",
       "asn": "AS16509",
@@ -984,11 +1030,11 @@
       "T3": 1.0,
       "T4": 1.0,
       "CSBI": 0.0,
-      "scam_probability": 0.05,
+      "scam_probability": 0.03,
       "trust_score": null,
       "risk_level": "LOW",
       "top3_reasons": [
-        "No strong scam signals detected"
+        "Own infrastructure, established domain (5500 days) \u2014 LOW risk."
       ],
       "cluster_id": -1,
       "cluster_label": "Unclustered (likely legitimate)",
@@ -1003,6 +1049,10 @@
         "ssl_issuer": "DigiCert"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, established domain (5500 days) \u2014 LOW risk.",
+      "stage1_verdict": "LOW",
       "ip_block": "52.95.116.0/24",
       "_fingerprint": {
         "ASN": 16509,
@@ -1015,7 +1065,7 @@
     },
     {
       "url": "https://www.phonepe.com/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "13.234.1.5",
       "asn": "AS16509",
@@ -1049,11 +1099,11 @@
       "T3": 1.0,
       "T4": 1.0,
       "CSBI": 0.0,
-      "scam_probability": 0.05,
+      "scam_probability": 0.03,
       "trust_score": null,
       "risk_level": "LOW",
       "top3_reasons": [
-        "No strong scam signals detected"
+        "Own infrastructure, established domain (3200 days) \u2014 LOW risk."
       ],
       "cluster_id": -1,
       "cluster_label": "Unclustered (likely legitimate)",
@@ -1068,6 +1118,10 @@
         "ssl_issuer": "Amazon"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, established domain (3200 days) \u2014 LOW risk.",
+      "stage1_verdict": "LOW",
       "ip_block": "13.234.1.0/24",
       "_fingerprint": {
         "ASN": 16509,
@@ -1080,7 +1134,7 @@
     },
     {
       "url": "https://www.hdfcbank.com/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "103.86.1.20",
       "asn": "AS17439",
@@ -1114,11 +1168,11 @@
       "T3": 1.0,
       "T4": 1.0,
       "CSBI": 0.0,
-      "scam_probability": 0.05,
+      "scam_probability": 0.03,
       "trust_score": null,
       "risk_level": "LOW",
       "top3_reasons": [
-        "No strong scam signals detected"
+        "Own infrastructure, established domain (8200 days) \u2014 LOW risk."
       ],
       "cluster_id": -1,
       "cluster_label": "Unclustered (likely legitimate)",
@@ -1133,6 +1187,10 @@
         "ssl_issuer": "DigiCert"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, established domain (8200 days) \u2014 LOW risk.",
+      "stage1_verdict": "LOW",
       "ip_block": "103.86.1.0/24",
       "_fingerprint": {
         "ASN": 17439,
@@ -1145,7 +1203,7 @@
     },
     {
       "url": "https://tech-blog-daily.github.io/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "185.199.108.153",
       "asn": "AS54113",
@@ -1198,6 +1256,10 @@
         "ssl_issuer": "Let's Encrypt"
       },
       "traditional_safe": true,
+      "is_free_hosting": true,
+      "routed_to_stage2": true,
+      "route_reason": "Shared free-hosting platform \u2014 certificate & IP belong to the platform, not this site. Escalating to Stage 2.",
+      "stage1_verdict": null,
       "ip_block": "185.199.108.0/24",
       "_fingerprint": {
         "ASN": 54113,
@@ -1210,7 +1272,7 @@
     },
     {
       "url": "https://www.thehindu.com/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "192.229.1.8",
       "asn": "AS15133",
@@ -1244,11 +1306,11 @@
       "T3": 1.0,
       "T4": 1.0,
       "CSBI": 0.0,
-      "scam_probability": 0.05,
+      "scam_probability": 0.03,
       "trust_score": null,
       "risk_level": "LOW",
       "top3_reasons": [
-        "No strong scam signals detected"
+        "Own infrastructure, established domain (6800 days) \u2014 LOW risk."
       ],
       "cluster_id": -1,
       "cluster_label": "Unclustered (likely legitimate)",
@@ -1263,6 +1325,10 @@
         "ssl_issuer": "DigiCert"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, established domain (6800 days) \u2014 LOW risk.",
+      "stage1_verdict": "LOW",
       "ip_block": "192.229.1.0/24",
       "_fingerprint": {
         "ASN": 15133,
@@ -1275,7 +1341,7 @@
     },
     {
       "url": "https://www.iitm.ac.in/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "103.5.134.10",
       "asn": "AS55824",
@@ -1309,11 +1375,11 @@
       "T3": 1.0,
       "T4": 1.0,
       "CSBI": 0.0,
-      "scam_probability": 0.05,
+      "scam_probability": 0.03,
       "trust_score": null,
       "risk_level": "LOW",
       "top3_reasons": [
-        "No strong scam signals detected"
+        "Own infrastructure, established domain (7000 days) \u2014 LOW risk."
       ],
       "cluster_id": -1,
       "cluster_label": "Unclustered (likely legitimate)",
@@ -1328,6 +1394,10 @@
         "ssl_issuer": "Sectigo"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, established domain (7000 days) \u2014 LOW risk.",
+      "stage1_verdict": "LOW",
       "ip_block": "103.5.134.0/24",
       "_fingerprint": {
         "ASN": 55824,
@@ -1340,7 +1410,7 @@
     },
     {
       "url": "https://www.india.gov.in/",
-      "scan_timestamp": "2026-07-27T05:06:43+00:00",
+      "scan_timestamp": "2026-07-28T16:33:45+00:00",
       "snapshot_path": null,
       "resolved_ip": "164.100.1.30",
       "asn": "AS4758",
@@ -1374,11 +1444,11 @@
       "T3": 1.0,
       "T4": 0.925,
       "CSBI": 0.0,
-      "scam_probability": 0.05,
+      "scam_probability": 0.03,
       "trust_score": null,
       "risk_level": "LOW",
       "top3_reasons": [
-        "No strong scam signals detected"
+        "Own infrastructure, established domain (8500 days) \u2014 LOW risk."
       ],
       "cluster_id": -1,
       "cluster_label": "Unclustered (likely legitimate)",
@@ -1393,6 +1463,10 @@
         "ssl_issuer": "DigiCert"
       },
       "traditional_safe": true,
+      "is_free_hosting": false,
+      "routed_to_stage2": false,
+      "route_reason": "Own infrastructure, established domain (8500 days) \u2014 LOW risk.",
+      "stage1_verdict": "LOW",
       "ip_block": "164.100.1.0/24",
       "_fingerprint": {
         "ASN": 4758,
