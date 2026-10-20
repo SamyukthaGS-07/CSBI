@@ -14,4 +14,19 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .venv/
-module4_clustering/
+module4_clustering/clustering/__pycache__/
+# trained models and experiment outputs are produced locally, not committed
+module5_decision/artifacts/*
+module4_clustering/artifacts/*
+!module5_decision/artifacts/.gitkeep
+!module4_clustering/artifacts/.gitkeep
+results/*
+!results/.gitkeep
+!results/REPORT.md
+!results/figures/
+!results/*.csv
+!results/*.json
+data/visualizations/
+!data/labeled/legit_top.txt
+!data/labeled/legit_free.txt
+!data/labeled/legit_login.txt

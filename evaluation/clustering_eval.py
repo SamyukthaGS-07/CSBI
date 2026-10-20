@@ -1,7 +1,3 @@
-from __future__ import annotations
-
-from csbi.clustering.evaluate import evaluate_clusters
-
-
-def run_clustering_eval(records: list[dict[str, object]]) -> dict[str, float]:
-    return evaluate_clusters(records)
+"""Moved: clustering evaluation (infrastructure vs kit fingerprint) is E1 in
+evaluation/campaign_experiments.py."""
+from evaluation.campaign_experiments import cluster_quality  # noqa: F401

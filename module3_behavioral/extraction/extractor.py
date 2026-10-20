@@ -33,8 +33,21 @@ from module3_behavioral.extraction import layer1_structural as l1
 from module3_behavioral.extraction import layer2_temporal as l2
 from module3_behavioral.extraction import layer3_behavioral as l3
 from module3_behavioral.extraction import layer4_upi as l4
+from module3_behavioral.extraction import layer0_url as l0
+from module3_behavioral.extraction import layer_tbdf as tbdf
+from module3_behavioral.extraction import layer5_platform as l5
 from module3_behavioral.scoring.trust_scores import all_trust_scores
 from module3_behavioral.scoring.csbi import compute_csbi
+from module3_behavioral.scoring.platform_aware import platform_scores
+
+
+def _soup(html: str):
+    if not html:
+        return None
+    try:
+        return BeautifulSoup(html, "lxml")
+    except Exception:
+        return BeautifulSoup(html, "html.parser")
 
 
 def dom_tag_sequence_hash(html: str) -> Optional[str]:
@@ -73,13 +86,23 @@ def extract_features(
     features.update(l2.extract(fr))
     features.update(l3.extract(fr.html, url))
     features.update(l4.extract(fr.html, url))
+    soup = _soup(fr.html)
+    features.update(l0.extract(url))                                  # baseline B1
+    features.update(tbdf.extract(soup, fr.final_url or url,           # baseline B2
+                                 cert_names=getattr(fr, "cert_names", None),
+                                 cookie_domains=getattr(fr, "cookie_domains", None)))
+    features.update(l5.extract(soup, fr.html, url, final_url=fr.final_url,
+                               redirect_hosts=getattr(fr, "redirect_hosts", None)))
     features["from_snapshot"] = int(fr.from_snapshot)   # §8.3 provenance flag
+    features["http_status"] = fr.status_code or 0
+    features["fetch_ok"] = int(bool(fr.html))
     # IP netblock — part of Module C's fingerprint (campaigns bulk-host in a /24).
     features["ip_block"] = fetch_mod.ip_block(fr.resolved_ip)
 
     # --- trust scores + CSBI ---
     trust = all_trust_scores(features)
     csbi = compute_csbi(**trust)
+    features.update(platform_scores(features, **trust))   # T5, BC, CSBI-PA
 
     # --- infrastructure fields (Module A writes; Module C reads) ---
     asn, hosting_provider = lookup_asn(fr.resolved_ip)

@@ -39,6 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from module3_behavioral.extraction.extractor import extract_features
 from common.store import ScanStore
+from common.scanner import scan_many
 
 
 # --------------------------------------------------------------------------- #
@@ -171,7 +172,12 @@ def main() -> None:
                     help="ground-truth label to stamp on batch records")
     ap.add_argument("--limit", type=int, help="only scan the first N URLs")
     ap.add_argument("--delay", type=float, default=1.5,
-                    help="seconds between scans (default 1.5; keeps free APIs happy)")
+                    help="seconds between scans in --serial mode (default 1.5)")
+    ap.add_argument("--workers", type=int, default=16,
+                    help="parallel scans (default 16; ASN lookups are rate-limited separately)")
+    ap.add_argument("--serial", action="store_true", help="old one-at-a-time scanner")
+    ap.add_argument("--source", default=None,
+                    help="dataset source tag stored as meta_source (e.g. legit_top, legit_free, legit_login)")
     ap.add_argument("--rescan", action="store_true", help="re-scan URLs already in the store")
     ap.add_argument("--stats", action="store_true", help="summarise the store and exit")
     ap.add_argument("--no-store", action="store_true", help="don't write to the store")
@@ -184,6 +190,18 @@ def main() -> None:
         show_stats(store or ScanStore())
         return
 
+    if args.file and not args.serial:
+        urls = [ln.strip() for ln in Path(args.file).read_text(encoding="utf-8").splitlines()
+                if ln.strip() and not ln.startswith("#")]
+        if args.limit:
+            urls = urls[:args.limit]
+        src = args.source or Path(args.file).stem
+        meta = {u: {"source": src} for u in urls}
+        stats = scan_many(urls, args.label, store or ScanStore(), meta=meta,
+                          workers=args.workers, rescan=args.rescan)
+        print(stats)
+        print("\nnext:  python scripts/run_scan.py --stats")
+        return
     if args.file:
         run_batch(Path(args.file), args.label, store or ScanStore(), args.limit,
                   args.delay, args.rescan, not args.no_snapshot)

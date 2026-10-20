@@ -92,7 +92,7 @@ class ScanStore:
 
     # -- internals ------------------------------------------------------------
     def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(str(self.path))
+        conn = sqlite3.connect(str(self.path), timeout=30)
         conn.row_factory = sqlite3.Row
         return conn
 
@@ -159,6 +159,11 @@ class ScanStore:
 
     def all(self) -> Iterator[ScanRecord]:
         yield from self.query()
+
+    def urls(self) -> set[str]:
+        """All URLs already in the store (for resumable batch scans)."""
+        with self._connect() as conn:
+            return {r[0] for r in conn.execute("SELECT url FROM scans")}
 
     def count(self) -> int:
         with self._connect() as conn:

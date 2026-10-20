@@ -1,30 +1,105 @@
-# CSBI Scam Detection — UPI Fraud Focus
+# CSBI-PA — Platform-Aware Phishing Detection
 
-Cross-Signal Behavioral Inconsistency (CSBI) detection for early-stage scam
-website identification. PSG iTech, CSE — Project Review I.
+Cross-Signal Behavioural Inconsistency (CSBI) detection, extended for the part
+of phishing that current detectors handle worst: pages published for free on
+shared platforms such as `pages.dev`, `vercel.app`, `github.io`, `web.app` and
+`webflow.io`. PSG iTech, CSE.
 
-## Modules
-- **A — Feature Extraction & Scoring** (Samyuktha): layers 1–4 → T1–T4 → CSBI.
-- **B — Classification, Explainability, Backend & Frontend** (Shri Nithee).
-- **C — Campaign-Clustering Subsystem & Evaluation** (Varshan).
+## The problem
 
-All three meet at one seam: the shared scan-record store (`csbi/common/`, §3).
+In the OpenPhish public feed, **42.9% of the 389,920 unique phishing URLs listed
+between Oct 2024 and Oct 2026 sit on a free-hosting platform**
+(`module1_ingestion/openphish_history.py` reproduces the figure). On those pages
+every surface signal a detector trusts belongs to the *platform*: the TLS
+certificate (a wildcard for `*.pages.dev`), the IP and ASN (Cloudflare, Google,
+Vercel), the WHOIS age (the platform's domain, years old). Certificate-name,
+domain-age and infrastructure features therefore *pass* on a phishing page that
+cost nothing to publish. We call this **borrowed credibility**.
 
-## CSBI
-`CSBI = 100 * max(0, C - S)` where C = mean(T1, T2) surface credibility and
-S = mean(T3, T4) behavioral substance. Worked example (§5): 0.775 - 0.125 → **65**.
+## What is new here
 
-## Quickstart
+1. **Borrowed-credibility decomposition.** Surface trust is split into apparent
+   trust (what the page shows) and earned trust (only signals the publisher
+   controls): `BC = C_apparent − C_earned`.
+2. **Layer 5: platform-aware behaviour.** A static host has no backend, so a
+   credential form on it can only deliver what it collects to a third party.
+   The exfiltration path (Telegram bot API, form relays, webhooks, Apps
+   Script) is visible in the HTML. Layer 5 also judges brand impersonation
+   against the brand's *real* domains, including brand names written into
+   the subdomain (`paypal-verify.pages.dev`).
+3. **CSBI-PA** = `100 · max(0, C − min(T3, T4, T5))`. A single strong behavioural
+   red flag is no longer averaged away by layers that saw nothing.
+4. **Kit-fingerprint campaigns + weak supervision.** Infrastructure clustering
+   collapses on shared hosts (every tenant has the same ASN, certificate issuer
+   and nameservers). Pages are instead clustered on the phishing kit itself:
+   DOM shingles, form schema, asset names, CSS vocabulary and exfil endpoint.
+   One confirmed page then labels its kit cluster.
+5. **Deployed as a browser extension** with a credential guard: on a high-risk
+   page, the first keystroke into a password, OTP, card or UPI field asks
+   before the user can type.
+
+## Baselines we compare against (same data, same splits)
+
+| Set | Features |
+|---|---|
+| B1 | URL-lexical (24 features) |
+| B2 | **TBDF**, reimplemented from the base paper, Mishra & Varshney (2025), arXiv:2503.06487 |
+| B3 | URL + generic HTML statistics |
+| B4 | original CSBI (layers 1–4, T1–T4, CSBI) |
+| OURS | B4 + Layer 5 + T5 + borrowed credibility + CSBI-PA |
+
+Each set is trained as Logistic Regression, Random Forest and XGBoost, and
+evaluated with campaign-disjoint 5-fold cross-validation and a temporal split.
+Results are reported separately for free-hosted and self-hosted pages, plus
+TPR at 1% FPR. A browser warning that fires on 5% of legitimate sites is
+unusable, so that operating point matters more than accuracy.
+
+## Running it
+
 ```bash
-pip install -r requirements.txt
-python -m spacy download en_core_web_sm   # only if you upgrade to spaCy scoring
-pytest -q                                  # 42 tests, incl. the §5 worked example
-
-# scan one URL end-to-end (Module A)
-python scripts/run_scan.py https://example.com
+python run_all.py setup          # deps, OpenPhish history, legit URL lists
+python run_all.py legit          # scan ~5k legitimate pages (resumable)
+python run_all.py collect 24     # scan phishing as it is listed, for 24 h
+python run_all.py results        # train, experiments, campaigns, results/REPORT.md
+python run_all.py serve          # API + dashboard at http://localhost:8000
 ```
 
-## Module A status (Samyuktha) — complete
-Layers 1–4, T1–T4 (§4.1), CSBI (§4.2), fetch + snapshot (§8.3), WHOIS→CT
-fallback (§10), and `extract_features(url) -> ScanRecord` as the single entry
-point Module B calls. 42 passing tests.
+Phishing pages are taken down within hours of being listed, so they are scanned
+live by `collect`. Old feed URLs are dead and carry no page to analyse. Every
+step is resumable; Ctrl+C is safe.
+
+**Browser extension:** open `chrome://extensions`, enable *Developer mode*,
+click *Load unpacked* and choose the `extension/` folder. Keep `run_all.py serve`
+running.
+
+## Repository map
+
+| Path | What it does |
+|---|---|
+| `module1_ingestion/` | OpenPhish history miner, legit lists (top sites, legit free-hosted pages from ~675 awesome-lists + npm homepages, login pages) |
+| `module2_screening/` | Stage-1 routing (free host → full analysis) |
+| `module3_behavioral/` | fetch + layers 0 (URL), 1–4 (CSBI), TBDF baseline, layer 5 (platform), trust scores, CSBI, CSBI-PA |
+| `module4_clustering/` | Varshan's infrastructure clustering, kit fingerprints, campaign propagation, kit index |
+| `module5_decision/` | dataset cleaning, feature sets, training, SHAP-based reasons, inference |
+| `evaluation/` | metrics, campaign experiments (E1–E3), report + figures |
+| `backend/` | FastAPI: `/scan`, `/scan/page`, `/campaigns`, dashboard at `/` |
+| `extension/` | Chrome MV3 extension |
+| `common/` | schema, SQLite store, hosting/brand helpers, concurrent scanner, end-to-end pipeline |
+| `module6_delivery/` | the original Streamlit review demo (kept for reference) |
+
+## Honest limitations
+
+- T1–T5 weights are a definitional rubric, not learned. The classifier learns
+  from the raw features underneath. Reasons shown to users come from the
+  model's own TreeSHAP values.
+- No public UPI phishing dataset exists. The UPI layer (T4) is validated on
+  whatever UPI pages the live feeds contain, and the paper says so.
+- Legitimate free-hosted pages come from curated lists (awesome-lists, npm),
+  which skew towards developer sites.
+- E3 lead time is an upper bound: it assumes a page is crawled as soon as it
+  goes up.
+
+## Team
+
+Samyuktha G S (scanning, CSBI layers, platform layer, pipeline), Shri Nithee
+(classification and delivery), Varshan (campaign clustering).

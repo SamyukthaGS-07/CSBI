@@ -1,16 +1,27 @@
-# ---- shared ----
+# ---- scanning (Modules 1-3) ----
+requests
+beautifulsoup4
+lxml
+tldextract
+python-whois
+cryptography
+
+# ---- models, clustering, evaluation (Modules 4-5) ----
+numpy
+pandas
+scipy
+scikit-learn
+xgboost
+joblib
+matplotlib
+
+# ---- API + dashboard (Module 6) ----
+fastapi
+uvicorn
+pydantic
+
+# ---- tests ----
 pytest
 
-# ---- Module A: Feature Extraction & Scoring (Samyuktha) ----
-requests            # fetch.py: HTTP
-beautifulsoup4      # Layer 3: HTML parsing, brand mismatch
-lxml                # bs4 parser backend
-tldextract          # Layer 1: subdomain / registrable-domain split
-python-whois        # Layer 2: domain age
-cryptography        # Layer 2: SSL certificate parsing / age
-spacy               # Layer 3/4: urgency + subsidy language patterns
-opencv-python       # Layer 4: QR / emblem detection
-pyzbar              # Layer 4: QR decode
-# spaCy model (install separately): python -m spacy download en_core_web_sm
-
-# ---- Module B / C deps live in their own sections when those land ----
+# Optional: shap (only for extra SHAP plots; the model's own TreeSHAP is used
+# for reasons), streamlit + plotly (legacy review demo in module6_delivery/).

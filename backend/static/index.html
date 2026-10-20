@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSBI-PA Console</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --ink: #0b0b0b; --muted: #52514e; --line: #e6e5e0;
+    --accent: #2a78d6; --high: #C62828; --med: #C77700; --low: #2E7D32; --soft: #F2F6FB;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #141413; --card: #1d1d1c; --ink: #f0efec; --muted: #b5b4ac;
+      --line: #33332f; --accent: #3987e5; --high: #ef6b6b; --med: #e0a03a; --low: #5cb860; --soft: #1f2a38; }
+  }
+  :root[data-theme="dark"] { --bg: #141413; --card: #1d1d1c; --ink: #f0efec; --muted: #b5b4ac;
+      --line: #33332f; --accent: #3987e5; --high: #ef6b6b; --med: #e0a03a; --low: #5cb860; --soft: #1f2a38; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 16px 60px; }
+  header h1 { font-size: 22px; margin: 0; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-top: 18px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 12px; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; }
+  input[type=url] { flex: 1 1 320px; min-width: 0; padding: 10px 12px; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
+  button { font: inherit; padding: 10px 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
+  .muted { color: var(--muted); }
+  .verdict { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; margin-top: 16px; }
+  .lvl { font-size: 24px; font-weight: 700; }
+  .HIGH { color: var(--high); } .MEDIUM { color: var(--med); } .LOW { color: var(--low); }
+  .mono { font-family: ui-monospace, Consolas, monospace; font-size: 13px; color: var(--muted); word-break: break-all; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+  .bars { display: grid; grid-template-columns: 110px 1fr 44px; gap: 8px 10px; align-items: center; }
+  .track { height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 5px; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .note { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 10px; margin-top: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.ours td { font-weight: 650; }
+  .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 760px) { .figs { grid-template-columns: 1fr; } }
+  .figs img { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  .scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>CSBI-PA Console</h1>
+    <p>Platform-aware phishing detection — live scanner, evaluation results and known campaigns.</p>
+  </header>
+
+  <section class="card">
+    <h2>Scan a URL</h2>
+    <form id="f">
+      <input id="u" type="url" placeholder="https://example.pages.dev/" required aria-label="URL to scan">
+      <button type="submit">Scan</button>
+    </form>
+    <div id="out"></div>
+  </section>
+
+  <section class="card">
+    <h2>Results</h2>
+    <div id="headline" class="muted">No results yet — run <code>python run_all.py results</code>.</div>
+    <div class="scroll"><table id="cv"></table></div>
+    <div class="figs" id="figs"></div>
+  </section>
+
+  <section class="card">
+    <h2>Known phishing campaigns (kit clusters)</h2>
+    <div class="scroll"><table id="camps"></table></div>
+  </section>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+function el(tag, attrs = {}, kids = []) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "text") e.textContent = v; else if (k === "style") e.style.cssText = v; else e.setAttribute(k, v);
+  }
+  kids.forEach((k) => k && e.appendChild(k));
+  return e;
+}
+function bar(label, v, color, max = 1) {
+  const x = Math.max(0, Math.min(max, Number(v) || 0));
+  return [el("span", { text: label }),
+    el("div", { class: "track" }, [el("div", { class: "fill", style: `width:${100 * x / max}%;background:${color}` })]),
+    el("span", { class: "num", text: max === 1 ? x.toFixed(2) : String(Math.round(x)) })];
+}
+$("f").onsubmit = async (e) => {
+  e.preventDefault();
+  const out = $("out");
+  out.replaceChildren(el("p", { class: "muted", text: "Scanning… (TLS, WHOIS and the page itself; up to ~20 s)" }));
+  try {
+    const r = await fetch("/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: $("u").value }) });
+    const v = await r.json();
+    if (!r.ok) throw new Error(v.detail || r.status);
+    const label = { HIGH: "Likely phishing", MEDIUM: "Suspicious", LOW: "Looks safe" }[v.risk_level] || v.risk_level;
+    const s = v.scores || {};
+    const left = el("div", {}, [
+      el("h2", { text: "Why" }),
+      el("ul", {}, (v.reasons || []).map((t) => el("li", { text: t }))),
+    ]);
+    if (v.campaign) left.append(el("div", { class: "note", text: `Kit match: ${v.campaign}` }));
+    if (v.free_hosted && (s.borrowed_credibility || 0) > 0.2)
+      left.append(el("div", { class: "note", text: `Hosted on ${v.platform}: certificate, IP and domain age belong to the platform (borrowed credibility ${(+s.borrowed_credibility).toFixed(2)}).` }));
+    const right = v.allowlisted ? el("div") : el("div", {}, [
+      el("h2", { text: "Scores" }),
+      el("div", { class: "bars" }, [
+        ...bar("Apparent trust", s.C_apparent, "#9FB8D8"), ...bar("Earned trust", s.C_earned, "var(--accent)"),
+        ...bar("T3 behaviour", s.T3, "#8f8d86"), ...bar("T4 UPI", s.T4, "#8f8d86"), ...bar("T5 platform", s.T5, "#8f8d86"),
+        ...bar("CSBI", s.CSBI, "#5f5e59", 100), ...bar("CSBI-PA", s.CSBI_PA, "var(--high)", 100),
+      ]),
+    ]);
+    out.replaceChildren(
+      el("div", { class: "verdict" }, [
+        el("span", { class: `lvl ${v.risk_level}`, text: label }),
+        el("span", { class: "muted", text: `${Math.round((v.scam_probability || 0) * 100)}% phishing probability` }),
+      ]),
+      el("div", { class: "mono", text: v.url }),
+      el("div", { class: "grid2", style: "margin-top:12px" }, [left, right]));
+  } catch (err) {
+    out.replaceChildren(el("p", { class: "HIGH", text: `Scan failed: ${err.message}` }));
+  }
+};
+const NAMES = { B1_url: "URL only", B2_tbdf: "TBDF (Mishra & Varshney 2025)", B3_url_html: "URL + HTML",
+  B4_csbi: "CSBI layers 1-4", OURS: "CSBI-PA (ours)" };
+async function results() {
+  const r = await fetch("/results/summary");
+  if (!r.ok) return;
+  const d = await r.json();
+  if (!d.rows || !d.rows.length) return;
+  $("headline").textContent = `${d.dataset.n.toLocaleString()} pages (${d.dataset.n_phish.toLocaleString()} phishing, ` +
+    `${d.dataset.n_legit.toLocaleString()} legitimate; ${d.dataset.n_free_hosted.toLocaleString()} free-hosted). ` +
+    `XGBoost, campaign-disjoint 5-fold cross-validation.`;
+  const head = el("tr", {}, ["Feature set", "Subset", "Precision", "Recall", "F1", "ROC-AUC", "TPR @ 1% FPR"].map((t) => el("th", { text: t })));
+  const rows = d.rows.map((x) => el("tr", { class: x.features === "OURS" ? "ours" : "" }, [
+    el("td", { text: NAMES[x.features] || x.features }), el("td", { text: x.subset.replace("_", " ") }),
+    ...["precision", "recall", "f1", "roc_auc", "tpr_at_1fpr"].map((k) => el("td", { class: "n", text: (+x[k]).toFixed(3) }))]));
+  $("cv").replaceChildren(el("thead", {}, [head]), el("tbody", {}, rows));
+  $("figs").replaceChildren(...d.figures.map((f) => el("img", { src: `/results/figures/${f}`, alt: f.replace(/_/g, " ").replace(".png", "") })));
+}
+async function camps() {
+  const r = await fetch("/campaigns");
+  const c = await r.json();
+  if (!c.length) { $("camps").replaceChildren(el("tr", {}, [el("td", { class: "muted", text: "No campaigns yet." })])); return; }
+  $("camps").replaceChildren(
+    el("thead", {}, [el("tr", {}, ["#", "Campaign", "Pages", "Example"].map((t) => el("th", { text: t })))]),
+    el("tbody", {}, c.slice(0, 40).map((x) => el("tr", {}, [el("td", { text: x.cluster_id }), el("td", { text: x.label }),
+      el("td", { class: "n", text: x.size }), el("td", { class: "mono", text: x.example })]))));
+}
+results(); camps();
+</script>
+</body>
+</html>

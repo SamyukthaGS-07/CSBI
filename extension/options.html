@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CSBI Phishing Shield — Settings</title>
+<style>
+  body { font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 560px; margin: 32px auto; padding: 0 16px; color: #1d1d1f; }
+  h1 { font-size: 20px; }
+  label { display: block; margin: 14px 0 4px; font-weight: 600; }
+  input[type=text] { width: 100%; padding: 8px; font: inherit; border: 1px solid #ccc; border-radius: 6px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  button { font: inherit; padding: 8px 14px; border-radius: 6px; border: 0; background: #1F5EA8; color: #fff; cursor: pointer; }
+  .muted { color: #6b6b70; font-size: 13px; }
+  #status { margin-left: 8px; }
+</style>
+</head>
+<body>
+  <h1>CSBI Phishing Shield — Settings</h1>
+  <label for="apiBase">API address</label>
+  <input id="apiBase" type="text" placeholder="http://localhost:8000">
+  <p class="muted">Where the CSBI API is running. For a remote server, Chrome will ask you to allow access to that address.</p>
+  <div class="row"><input id="enabled" type="checkbox"><span>Check pages automatically</span></div>
+  <div class="row"><input id="warnMedium" type="checkbox"><span>Show a banner on suspicious (medium-risk) pages</span></div>
+  <p class="muted">Privacy: the HTML of pages you visit is sent only to the API address above. Popular sites (top 1,000 domains) are never analysed.</p>
+  <div class="row"><button id="save" type="button">Save</button><button id="test" type="button">Test connection</button><span id="status" class="muted"></span></div>
+  <script src="options.js"></script>
+</body>
+</html>

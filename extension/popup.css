@@ -1,0 +1,28 @@
+:root {
+  --ink: #1d1d1f; --muted: #6b6b70; --line: #e5e5ea; --bg: #ffffff;
+  --high: #C62828; --med: #E08A00; --low: #2E7D32; --accent: #1F5EA8;
+  --earned: #1F5EA8; --borrowed: #9FB8D8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; width: 340px; font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.brand { font-weight: 650; }
+main { padding: 14px; }
+footer { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px 12px; border-top: 1px solid var(--line); }
+footer a { color: var(--accent); }
+button { font: inherit; border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+.muted { color: var(--muted); }
+.verdict { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.level { font-size: 20px; font-weight: 700; }
+.level.HIGH { color: var(--high); } .level.MEDIUM { color: var(--med); } .level.LOW { color: var(--low); }
+.prob { font-variant-numeric: tabular-nums; color: var(--muted); }
+.host { font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted); word-break: break-all; margin: 2px 0 10px; }
+h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }
+ul { margin: 0; padding-left: 18px; } li { margin: 3px 0; }
+.bars { display: grid; grid-template-columns: 74px 1fr 34px; gap: 6px 8px; align-items: center; }
+.track { height: 8px; background: #f0f0f3; border-radius: 4px; overflow: hidden; position: relative; }
+.fill { height: 100%; border-radius: 4px; }
+.num { font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); }
+.note { background: #F2F6FB; border-left: 3px solid var(--accent); padding: 7px 9px; margin-top: 8px; }
+.campaign { background: #FDECEA; border-left: 3px solid var(--high); padding: 7px 9px; margin-top: 8px; }
+.err { color: var(--high); }

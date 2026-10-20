@@ -46,8 +46,12 @@ try:
 except Exception:
     SNAPSHOT_DIR = Path("data/snapshots")
 
-USER_AGENT = "Mozilla/5.0 (CSBI-scanner; +research)"
-DEFAULT_TIMEOUT = 10
+# A real browser UA: phishing kits routinely cloak (serve a blank/404 page) to
+# anything that looks like a bot, which would silently empty Layers 3-5.
+USER_AGENT = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+              "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
+DEFAULT_TIMEOUT = 12
+MAX_HTML_BYTES = 3_000_000
 
 
 @dataclass
@@ -66,6 +70,10 @@ class FetchResult:
     snapshot_path: Optional[str] = None
     from_snapshot: bool = False
     errors: list[str] = field(default_factory=list)
+    # --- added for the TBDF baseline + platform-aware layer ---------------
+    cert_names: list[str] = field(default_factory=list)   # subject CN + SANs
+    cookie_domains: list[str] = field(default_factory=list)
+    redirect_hosts: list[str] = field(default_factory=list)  # hosts in the redirect chain
 
 
 # --------------------------------------------------------------------------- #
@@ -121,6 +129,12 @@ def resolve_ip(host: str) -> Optional[str]:
 
 def get_ssl_cert(host: str, port: int = 443, timeout: int = 6) -> tuple[Optional[str], Optional[dt.datetime]]:
     """Return (issuer_org, not_before) from the served certificate."""
+    issuer, not_before, _ = get_ssl_cert_full(host, port, timeout)
+    return issuer, not_before
+
+
+def get_ssl_cert_full(host: str, port: int = 443, timeout: int = 6):
+    """Return (issuer_org, not_before, names) where names = subject CN + DNS SANs."""
     try:
         ctx = ssl.create_default_context()
         with socket.create_connection((host, port), timeout=timeout) as sock:
@@ -128,13 +142,27 @@ def get_ssl_cert(host: str, port: int = 443, timeout: int = 6) -> tuple[Optional
                 cert = ssock.getpeercert()
         issuer = dict(x[0] for x in cert.get("issuer", ())).get("organizationName")
         not_before = parse_cert_datetime(cert.get("notBefore", ""))
-        return issuer, not_before
+        names = [v for k, v in (x[0] for x in cert.get("subject", ())) if k == "commonName"]
+        names += [v for k, v in cert.get("subjectAltName", ()) if k == "DNS"]
+        return issuer, not_before, sorted({n.lower() for n in names})
     except Exception:
-        return None, None
+        return None, None, []
+
+
+_WHOIS_CACHE: dict[str, tuple] = {}
 
 
 def get_whois(domain: str):
-    """Return (creation, expiration, nameserver) best-effort."""
+    """Return (creation, expiration, nameserver) best-effort, cached per domain
+    (thousands of free-hosted pages share one platform WHOIS record)."""
+    if domain in _WHOIS_CACHE:
+        return _WHOIS_CACHE[domain]
+    out = _get_whois_uncached(domain)
+    _WHOIS_CACHE[domain] = out
+    return out
+
+
+def _get_whois_uncached(domain: str):
     if _whois is None:
         return None, None, None
     try:
@@ -170,6 +198,21 @@ def ip_block(ip: Optional[str], prefix: int = 24) -> Optional[str]:
 # Per-process cache: campaigns reuse hosts, so don't re-query the same IP.
 _ASN_CACHE: dict[str, tuple[Optional[str], Optional[str]]] = {}
 
+import threading as _threading
+import time as _time
+
+_ASN_LOCK = _threading.Lock()
+_ASN_LAST = [0.0]
+_ASN_MIN_INTERVAL = 1.4          # ip-api.com free tier: 45 requests / minute
+
+
+def _asn_rate_limit() -> None:
+    with _ASN_LOCK:
+        wait = _ASN_LAST[0] + _ASN_MIN_INTERVAL - _time.monotonic()
+        if wait > 0:
+            _time.sleep(wait)
+        _ASN_LAST[0] = _time.monotonic()
+
 
 def get_asn(ip: Optional[str], timeout: int = 6) -> tuple[Optional[str], Optional[str]]:
     """Return (asn, hosting_provider) for an IP, e.g. ("AS13335", "Cloudflare, Inc.").
@@ -204,6 +247,7 @@ def get_asn(ip: Optional[str], timeout: int = 6) -> tuple[Optional[str], Optiona
 
     if asn is None:
         try:
+            _asn_rate_limit()
             r = requests.get(f"http://ip-api.com/json/{ip}",
                              params={"fields": "status,as,asname,isp,org"}, timeout=timeout)
             if r.ok:
@@ -262,12 +306,21 @@ def fetch(url: str, timeout: int = DEFAULT_TIMEOUT, save: bool = True) -> FetchR
     if requests is not None:
         try:
             resp = requests.get(
-                url, timeout=timeout, headers={"User-Agent": USER_AGENT}, allow_redirects=True
+                url, timeout=timeout, allow_redirects=True, stream=True,
+                headers={"User-Agent": USER_AGENT,
+                         "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
+                         "Accept-Language": "en-IN,en;q=0.9"},
             )
+            raw = resp.raw.read(MAX_HTML_BYTES, decode_content=True) or b""
+            enc = resp.encoding or resp.apparent_encoding or "utf-8"
             result.status_code = resp.status_code
             result.final_url = resp.url
-            result.html = resp.text or ""
+            result.html = raw.decode(enc, errors="replace")
             result.ok = resp.ok
+            result.redirect_hosts = [url_host(r.url) for r in resp.history] + [url_host(resp.url)]
+            result.cookie_domains = sorted({(c.domain or "").lstrip(".").lower()
+                                            for c in resp.cookies if c.domain})
+            resp.close()
             if save and result.html:
                 result.snapshot_path = save_snapshot(url, result.html)
         except Exception as e:
@@ -285,7 +338,15 @@ def fetch(url: str, timeout: int = DEFAULT_TIMEOUT, save: bool = True) -> FetchR
             result.errors.append("no live page and no snapshot available")
 
     # --- TLS + WHOIS (best-effort; independent of HTML) ---
-    result.ssl_issuer, result.ssl_not_before = get_ssl_cert(host)
-    creation, expiration, ns = get_whois(host)
+    result.ssl_issuer, result.ssl_not_before, result.cert_names = get_ssl_cert_full(host)
+    # WHOIS is keyed on the registrable domain (WHOIS servers do not know about
+    # subdomains). For a free-hosted page that is the *platform* (pages.dev),
+    # which is exactly the borrowed-credibility effect Layer 5 measures.
+    try:
+        from common.hosting import platform_of, registrable_domain
+        whois_domain = platform_of(host) or registrable_domain(host)
+    except Exception:
+        whois_domain = host
+    creation, expiration, ns = get_whois(whois_domain)
     result.whois_creation, result.whois_expiration, result.nameserver = creation, expiration, ns
     return result

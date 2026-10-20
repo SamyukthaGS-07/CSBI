@@ -1,0 +1,32 @@
+#csbi-overlay {
+  position: fixed; inset: 0; z-index: 2147483647;
+  background: rgba(60, 8, 8, 0.92);
+  display: flex; align-items: center; justify-content: center;
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: 16px;
+}
+#csbi-overlay .csbi-box {
+  background: #fff; color: #1d1d1f; max-width: 560px; width: 100%;
+  border-radius: 14px; padding: 28px 28px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.4);
+}
+#csbi-overlay .csbi-icon { font-size: 34px; color: #C62828; line-height: 1; }
+#csbi-overlay h1 { font-size: 22px; margin: 10px 0 2px; color: #B71C1C; font-weight: 700; }
+#csbi-overlay .csbi-host { margin: 0 0 12px; font-family: ui-monospace, Consolas, monospace; color: #555; word-break: break-all; }
+#csbi-overlay .csbi-lead { margin: 0 0 10px; }
+#csbi-overlay .csbi-reasons { margin: 0 0 12px; padding-left: 20px; }
+#csbi-overlay .csbi-reasons li { margin: 4px 0; }
+#csbi-overlay .csbi-note { background: #FFF4E5; border-left: 3px solid #E08A00; padding: 8px 10px; margin: 8px 0; font-size: 14px; }
+#csbi-overlay .csbi-actions { display: flex; gap: 12px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+#csbi-overlay .csbi-btn { font: inherit; border: 0; border-radius: 8px; padding: 10px 16px; cursor: pointer; }
+#csbi-overlay .csbi-primary { background: #1F5EA8; color: #fff; font-weight: 600; }
+#csbi-overlay .csbi-link { background: transparent; color: #666; text-decoration: underline; padding: 10px 4px; }
+#csbi-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 2147483646;
+  background: #FFF4E5; color: #5D3A00; border-bottom: 2px solid #E08A00;
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: 10px 44px 10px 16px;
+}
+#csbi-banner .csbi-x {
+  position: absolute; right: 10px; top: 6px; border: 0; background: transparent;
+  font-size: 22px; cursor: pointer; color: #5D3A00;
+}

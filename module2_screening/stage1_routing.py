@@ -5,12 +5,12 @@ features. Decides whether a site can be resolved directly, or must be
 escalated to Module 3 (behavioural) + Module 4 (clustering) — Stage 2.
 """
 
-FREE_HOSTING_SUFFIXES = ("pages.dev", "web.app", "github.io", "netlify.app", "vercel.app", "blogspot.com")
+from common.hosting import host_of, is_free_hosted
 
 
 def stage1_routing(url: str, features: dict):
-    host = url.split("//")[-1].split("/")[0].lower()
-    is_free_host = any(host.endswith(suf) for suf in FREE_HOSTING_SUFFIXES)
+    host = host_of(url)
+    is_free_host = is_free_hosted(host)
     age = features.get("domain_age_days", 9999)
 
     if is_free_host:
