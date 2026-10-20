@@ -299,6 +299,20 @@ def main() -> None:
     except Exception as e:  # noqa: BLE001
         md.append(f"_(store-based figures skipped: {e})_\n")
 
+    try:
+        from evaluation.cluster_viz import build as build_campaign_map
+        cm = build_campaign_map(args.store, RES, 0.25, str(ROOT / "data" / "snapshots"))
+        if cm:
+            md.append("## Campaign clustering\n")
+            md.append(f"- {cm['n_pages']:,} confirmed-phishing pages grouped into "
+                      f"**{cm['n_campaigns']:,} campaigns** by shared phishing kit "
+                      f"({cm['clustered_share']:.0%} of pages in a campaign; largest has "
+                      f"{cm['largest']:,} pages)")
+            top = ", ".join(f"{c['brand']} ({c['size']})" for c in cm['campaigns'][:6])
+            md.append(f"- Largest campaigns: {top}\n")
+    except Exception as e:  # noqa: BLE001
+        md.append(f"_(campaign map skipped: {e})_\n")
+
     md.append("## Figures\n")
     for p in sorted(FIG.glob("*.png")):
         md.append(f"![{p.stem}](figures/{p.name})")

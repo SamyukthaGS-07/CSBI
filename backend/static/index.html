@@ -49,6 +49,12 @@
   .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
   .tile .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .tile .k { color: var(--muted); font-size: 13px; }
+  #map { width: 100%; height: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
+  #map circle { transition: r .1s; }
+  #map circle:hover { stroke: var(--ink); stroke-width: 1.5; }
+  .maplegend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 4px; }
+  .maplegend span { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+  .maplegend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 </style>
 </head>
 <body>
@@ -80,7 +86,12 @@
   </section>
 
   <section class="card">
-    <h2>Known phishing campaigns (kit clusters)</h2>
+    <h2>Campaign map — phishing kits clustered</h2>
+    <div id="mapwrap">
+      <p class="muted" id="maphint">No campaigns yet — this fills in once phishing pages are scanned and clustered.</p>
+      <svg id="map" viewBox="0 0 640 460" role="img" aria-label="Scatter plot of phishing pages grouped by kit" style="display:none"></svg>
+      <div id="maplegend" class="maplegend"></div>
+    </div>
     <div class="scroll"><table id="camps"></table></div>
   </section>
 </div>
@@ -171,7 +182,43 @@ async function stats() {
       el("div", { class: "v", text: Number(v || 0).toLocaleString() }), el("div", { class: "k", text: k })])));
   } catch { $("stats").textContent = "Stats unavailable."; }
 }
-results(); camps(); stats(); setInterval(stats, 60000);
+const SVGNS = "http://www.w3.org/2000/svg";
+function sel(tag, attrs) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+async function campaignMap() {
+  let d;
+  try { d = await (await fetch("/campaign_map")).json(); } catch { return; }
+  if (!d.points || d.points.length < 3) return;
+  const svg = $("map"), W = 640, H = 460, pad = 18;
+  $("maphint").style.display = "none";
+  svg.style.display = "block";
+  svg.replaceChildren();
+  const xs = d.points.map((p) => p.x), ys = d.points.map((p) => p.y);
+  const xmin = Math.min(...xs), xmax = Math.max(...xs), ymin = Math.min(...ys), ymax = Math.max(...ys);
+  const sx = (x) => pad + (W - 2 * pad) * (x - xmin) / (xmax - xmin || 1);
+  const sy = (y) => pad + (H - 2 * pad) * (y - ymin) / (ymax - ymin || 1);
+  const colour = {}; (d.campaigns || []).forEach((c) => { colour[c.id] = c.color; });
+  const meta = {}; (d.campaigns || []).forEach((c) => { meta[c.id] = c; });
+  for (const p of d.points) {
+    const c = sel("circle", { cx: sx(p.x).toFixed(1), cy: sy(p.y).toFixed(1),
+      r: p.c < 0 ? 2.5 : 4, fill: p.c < 0 ? (d.noise_color || "#c7c6c1") : (colour[p.c] || "#c7c6c1"),
+      "fill-opacity": p.c < 0 ? 0.5 : 0.85 });
+    const m = meta[p.c];
+    const t = sel("title", {});
+    t.textContent = p.c < 0 ? "unclustered page" : `${m ? m.brand : "campaign"} · ${m ? m.platforms.join("/") : ""} (${m ? m.size : "?"} pages)`;
+    c.appendChild(t);
+    svg.appendChild(c);
+  }
+  const named = (d.campaigns || []).filter((c) => c.color && c.color !== (d.noise_color || "#c7c6c1")).slice(0, 10);
+  $("maplegend").replaceChildren(...named.map((c) => el("span", {}, [
+    (() => { const i = document.createElement("i"); i.style.background = c.color; return i; })(),
+    el("span", { text: `${c.brand} · ${c.platforms.join("/") || "mixed"} (${c.size})` }),
+  ])));
+}
+results(); camps(); stats(); campaignMap(); setInterval(() => { stats(); campaignMap(); camps(); }, 60000);
 </script>
 </body>
 </html>

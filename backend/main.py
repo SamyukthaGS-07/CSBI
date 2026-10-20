@@ -175,6 +175,14 @@ def campaigns():
     return json.loads(p.read_text()) if p.exists() else []
 
 
+@app.get("/campaign_map")
+def campaign_map():
+    """Cluster geometry for the interactive map: 2-D points + campaign metadata.
+    Contains no URLs or page content."""
+    p = ROOT / "results" / "campaign_map.json"
+    return json.loads(p.read_text()) if p.exists() else {"points": [], "campaigns": []}
+
+
 @app.get("/results/summary")
 def results_summary():
     res = ROOT / "results"
