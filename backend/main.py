@@ -175,6 +175,14 @@ def campaigns():
     return json.loads(p.read_text()) if p.exists() else []
 
 
+@app.get("/ct_candidates")
+def ct_candidates(limit: int = 40):
+    """Recent zero-day candidates flagged from Certificate Transparency logs."""
+    p = ROOT / "results" / "ct_candidates.json"
+    rows = json.loads(p.read_text()) if p.exists() else []
+    return rows[:limit]
+
+
 @app.get("/campaign_map")
 def campaign_map():
     """Cluster geometry for the interactive map: 2-D points + campaign metadata.

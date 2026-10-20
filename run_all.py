@@ -7,6 +7,7 @@ the results report. Works on Windows, macOS and Linux.
     python run_all.py legit          scan the legitimate lists (~1-2 h)
     python run_all.py collect 12     scan newly listed phishing for 12 hours
     python run_all.py results        train, run experiments, build index, report
+    python run_all.py ctwatch        watch Certificate Transparency logs for zero-day lookalikes
     python run_all.py serve          start the API + dashboard on :8000 (this machine only)
     python run_all.py serve public   same, reachable at http://<server-ip>:8000 (cloud VM)
     python run_all.py status         what is in the store right now
@@ -75,6 +76,10 @@ def serve(public: bool = False) -> None:
         "--port", "8000")
 
 
+def ctwatch() -> None:
+    run(PY, "module1_ingestion/ct_monitor.py")
+
+
 def status() -> None:
     run(PY, "scripts/run_scan.py", "--stats")
 
@@ -89,6 +94,8 @@ if __name__ == "__main__":
         collect(float(sys.argv[2]) if len(sys.argv) > 2 else 12)
     elif cmd == "results":
         results()
+    elif cmd == "ctwatch":
+        ctwatch()
     elif cmd == "serve":
         serve(public=len(sys.argv) > 2 and sys.argv[2] == "public")
     elif cmd == "status":

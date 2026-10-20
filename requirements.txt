@@ -23,5 +23,7 @@ pydantic
 # ---- tests ----
 pytest
 
+# Optional: certstream (live CT-log firehose for the zero-day monitor; the
+# monitor falls back to polling crt.sh when it is absent).
 # Optional: shap (only for extra SHAP plots; the model's own TreeSHAP is used
 # for reasons), streamlit + plotly (legacy review demo in module6_delivery/).

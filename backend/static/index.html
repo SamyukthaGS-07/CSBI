@@ -86,6 +86,12 @@
   </section>
 
   <section class="card">
+    <h2>Zero-day watch — Certificate Transparency</h2>
+    <p class="muted" style="margin-top:0">Brand-impersonation domains flagged the moment their TLS certificate was issued, then scored by the model — before they appear in any feed.</p>
+    <div class="scroll"><table id="ct"></table></div>
+  </section>
+
+  <section class="card">
     <h2>Campaign map — phishing kits clustered</h2>
     <div id="mapwrap">
       <p class="muted" id="maphint">No campaigns yet — this fills in once phishing pages are scanned and clustered.</p>
@@ -218,7 +224,21 @@ async function campaignMap() {
     el("span", { text: `${c.brand} · ${c.platforms.join("/") || "mixed"} (${c.size})` }),
   ])));
 }
-results(); camps(); stats(); campaignMap(); setInterval(() => { stats(); campaignMap(); camps(); }, 60000);
+async function ct() {
+  let rows; try { rows = await (await fetch("/ct_candidates")).json(); } catch { return; }
+  const t = document.getElementById("ct");
+  if (!rows.length) { t.replaceChildren(el("tr", {}, [el("td", { class: "muted", text: "No zero-day candidates yet — the CT monitor fills this as certificates are issued." })])); return; }
+  t.replaceChildren(
+    el("thead", {}, [el("tr", {}, ["Risk", "Domain", "Brand", "Why flagged", "Seen"].map((h) => el("th", { text: h })))]),
+    el("tbody", {}, rows.map((r) => el("tr", {}, [
+      el("td", {}, [el("span", { class: `lvl ${r.risk}`, style: "font-size:13px", text: r.risk })]),
+      el("td", { class: "mono", text: r.host }),
+      el("td", { text: (r.brand || "").replace(/^./, (c) => c.toUpperCase()) }),
+      el("td", { text: r.reason }),
+      el("td", { class: "muted", text: (r.seen_at || "").replace("T", " ").slice(0, 16) }),
+    ]))));
+}
+results(); camps(); stats(); ct(); campaignMap(); setInterval(() => { stats(); campaignMap(); camps(); ct(); }, 60000);
 </script>
 </body>
 </html>

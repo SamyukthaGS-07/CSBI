@@ -33,3 +33,4 @@ data/visualizations/
 *.pem
 !keys/snapshots_public.pem
 data/.asn_rate.lock
+results/ct_candidates.json
