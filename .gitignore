@@ -32,3 +32,4 @@ data/visualizations/
 !data/labeled/legit_login.txt
 *.pem
 !keys/snapshots_public.pem
+data/.asn_rate.lock

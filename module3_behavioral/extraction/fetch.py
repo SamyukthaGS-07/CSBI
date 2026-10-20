@@ -207,11 +207,35 @@ _ASN_MIN_INTERVAL = 1.4          # ip-api.com free tier: 45 requests / minute
 
 
 def _asn_rate_limit() -> None:
+    """ip-api.com allows ~45 requests/minute per IP. The limit is shared by every
+    scanner process on this machine (e.g. `collect` and `legit` running at the
+    same time) through a small lock file, so together they never exceed it."""
     with _ASN_LOCK:
-        wait = _ASN_LAST[0] + _ASN_MIN_INTERVAL - _time.monotonic()
-        if wait > 0:
-            _time.sleep(wait)
-        _ASN_LAST[0] = _time.monotonic()
+        try:
+            import fcntl
+        except ImportError:                       # Windows: per-process only
+            wait = _ASN_LAST[0] + _ASN_MIN_INTERVAL - _time.monotonic()
+            if wait > 0:
+                _time.sleep(wait)
+            _ASN_LAST[0] = _time.monotonic()
+            return
+        path = Path(SNAPSHOT_DIR).parent / ".asn_rate.lock"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a+") as fh:
+            fcntl.flock(fh, fcntl.LOCK_EX)
+            fh.seek(0)
+            try:
+                last = float(fh.read().strip() or 0)
+            except ValueError:
+                last = 0.0
+            wait = last + _ASN_MIN_INTERVAL - _time.time()
+            if wait > 0:
+                _time.sleep(wait)
+            fh.seek(0)
+            fh.truncate()
+            fh.write(f"{_time.time():.3f}")
+            fh.flush()
+            fcntl.flock(fh, fcntl.LOCK_UN)
 
 
 def get_asn(ip: Optional[str], timeout: int = 6) -> tuple[Optional[str], Optional[str]]:
