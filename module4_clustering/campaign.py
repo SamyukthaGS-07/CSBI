@@ -56,9 +56,25 @@ def load_html(df: pd.DataFrame, snapshot_dir: str | Path | None = None) -> list[
     return out
 
 
-def kit_matrix(html: list[str], brands: list[str] | None = None, return_vectorizer=False):
+def kit_bags(df: pd.DataFrame, html: list[str]) -> list:
+    """Kit token bag per page: the stored `_kit` bag when the record has one
+    (computed at scan/import time), otherwise computed from the saved HTML."""
+    from collections import Counter
+    stored = df["_kit"] if "_kit" in df else pd.Series([None] * len(df))
+    brands = df["_claimed_brand"].fillna("").tolist() if "_claimed_brand" in df else [""] * len(df)
+    out = []
+    for k, h, b in zip(stored, html, brands):
+        if isinstance(k, dict) and k:
+            out.append(Counter(k))
+        else:
+            out.append(kit_tokens(h, b))
+    return out
+
+
+def kit_matrix(html: list[str], brands: list[str] | None = None, return_vectorizer=False, bags=None):
     brands = brands or [""] * len(html)
-    bags = [kit_tokens(h, b) for h, b in zip(html, brands)]
+    if bags is None:
+        bags = [kit_tokens(h, b) for h, b in zip(html, brands)]
     kv = KitVectorizer()
     X = kv.fit_transform(bags)
     return (X, kv) if return_vectorizer else X

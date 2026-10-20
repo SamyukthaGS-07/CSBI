@@ -148,6 +148,27 @@ def scan_page(req: PageReq):
     return _store(key, _public(rec))
 
 
+@app.get("/stats")
+def stats():
+    """Running totals straight from the scan store (refreshes every call)."""
+    import sqlite3
+    db = ROOT / "data" / "store" / "scans.db"
+    if not db.exists():
+        return {"total": 0, "phishing": 0, "legit": 0, "phishing_last_24h": 0, "campaigns": 0}
+    con = sqlite3.connect(str(db))
+    q = lambda sql: con.execute(sql).fetchone()[0]  # noqa: E731
+    out = {
+        "total": q("SELECT COUNT(*) FROM scans"),
+        "phishing": q("SELECT COUNT(*) FROM scans WHERE ground_truth='scam'"),
+        "legit": q("SELECT COUNT(*) FROM scans WHERE ground_truth='legit'"),
+        "phishing_last_24h": q("SELECT COUNT(*) FROM scans WHERE ground_truth='scam' "
+                               "AND scan_timestamp >= datetime('now','-1 day')"),
+        "campaigns": q("SELECT COUNT(DISTINCT cluster_id) FROM scans WHERE cluster_id IS NOT NULL"),
+    }
+    con.close()
+    return out
+
+
 @app.get("/campaigns")
 def campaigns():
     p = ROOT / "results" / "campaigns.json"

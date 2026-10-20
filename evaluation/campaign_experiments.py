@@ -44,10 +44,10 @@ import pandas as pd  # noqa: E402
 from sklearn.model_selection import StratifiedGroupKFold  # noqa: E402
 
 from evaluation.metrics import compute_metrics  # noqa: E402
-from module4_clustering.campaign import (infra_clusters, kit_clusters, kit_matrix,  # noqa: E402
-                                         load_html, propagate)
+from module4_clustering.campaign import (infra_clusters, kit_bags, kit_clusters,  # noqa: E402
+                                         kit_matrix, load_html, propagate)
 from module5_decision.dataset import clean, load_store  # noqa: E402
-from module5_decision.features import FEATURE_SETS, matrix  # noqa: E402
+from module5_decision.features import FEATURE_SETS, FEATURE_SETS_OFFLINE, matrix  # noqa: E402
 from module5_decision.train import make_model  # noqa: E402
 
 FRACTIONS = (0.01, 0.02, 0.05, 0.10, 0.20, 0.50)
@@ -72,7 +72,12 @@ def cluster_quality(labels: np.ndarray, y: np.ndarray, mask: np.ndarray) -> dict
 
 
 def e1(df, html, X, kit_eps, cap, rng):
-    idx = np.arange(len(df))
+    # infrastructure fields exist only for live scans
+    live = pd.to_numeric(df.get("meta_offline", 0), errors="coerce").fillna(0).to_numpy() == 0
+    idx = np.flatnonzero(live)
+    if len(idx) < 20:
+        print("  E1 skipped: needs live-scanned pages (infrastructure fields)")
+        return {}
     if len(idx) > cap:
         idx = np.sort(rng.choice(idx, cap, replace=False))
     sub = df.iloc[idx].reset_index(drop=True)
@@ -114,7 +119,8 @@ def e2(df, X, kit_labels, n_rep, tau, model_kind="xgb"):
     y = df["y"].to_numpy()
     free = df["free_hosted"].to_numpy() == 1
     groups = np.where(kit_labels >= 0, "k" + kit_labels.astype(str), "g" + df["group"].astype(str))
-    F = matrix(df, FEATURE_SETS["OURS"])
+    offline = pd.to_numeric(df.get("meta_offline", 0), errors="coerce").fillna(0).to_numpy() == 1
+    F = matrix(df, (FEATURE_SETS_OFFLINE if offline.any() else FEATURE_SETS)["OURS"])
     rows = []
     for rep in range(n_rep):
         rng = np.random.default_rng(rep)
@@ -213,11 +219,13 @@ def main() -> None:
 
     df, _ = clean(load_store(args.store))
     html = load_html(df, args.snapshots)
-    have = np.array([bool(h) for h in html])
+    has_kit = df["_kit"].map(lambda k: isinstance(k, dict) and bool(k)).to_numpy() if "_kit" in df \
+        else np.zeros(len(df), bool)
+    have = np.array([bool(h) for h in html]) | has_kit
     print(f"  pages with saved HTML: {have.sum():,}/{len(df):,}")
     df = df[have].reset_index(drop=True)
     html = [h for h, k in zip(html, have) if k]
-    X = kit_matrix(html, df["_claimed_brand"].fillna("").tolist())
+    X = kit_matrix(html, bags=kit_bags(df, html))
     kit_labels = kit_clusters(X, eps=args.kit_eps)
 
     print("\nE1 clustering quality")

@@ -23,7 +23,7 @@ import joblib  # noqa: E402
 import numpy as np  # noqa: E402
 
 from common.store import ScanStore  # noqa: E402
-from module4_clustering.campaign import KitIndex, kit_clusters, kit_matrix, load_html  # noqa: E402
+from module4_clustering.campaign import KitIndex, kit_bags, kit_clusters, kit_matrix, load_html  # noqa: E402
 from module5_decision.dataset import clean, load_store  # noqa: E402
 
 OUT = ROOT / "module4_clustering" / "artifacts" / "kit_index.joblib"
@@ -47,9 +47,11 @@ def main() -> None:
     df, _ = clean(load_store(args.store), verbose=False)
     df = df[df.y == 1].reset_index(drop=True)
     html = load_html(df, args.snapshots)
-    keep = np.array([bool(h) for h in html])
+    has_kit = df["_kit"].map(lambda k: isinstance(k, dict) and bool(k)).to_numpy() if "_kit" in df \
+        else np.zeros(len(df), bool)
+    keep = np.array([bool(h) for h in html]) | has_kit
     df, html = df[keep].reset_index(drop=True), [h for h, k in zip(html, keep) if k]
-    X, kv = kit_matrix(html, df["_claimed_brand"].fillna("").tolist(), return_vectorizer=True)
+    X, kv = kit_matrix(html, return_vectorizer=True, bags=kit_bags(df, html))
     labels = kit_clusters(X, eps=args.eps)
 
     store = ScanStore(args.store)

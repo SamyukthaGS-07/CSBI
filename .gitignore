@@ -30,3 +30,5 @@ data/visualizations/
 !data/labeled/legit_top.txt
 !data/labeled/legit_free.txt
 !data/labeled/legit_login.txt
+*.pem
+!keys/snapshots_public.pem

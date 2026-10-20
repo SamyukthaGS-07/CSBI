@@ -69,6 +69,31 @@ ABLATIONS: dict[str, list[str]] = {
     "OURS_minus_url": HTML + CSBI_LAYERS + CSBI_SCORES + PLATFORM + PLATFORM_SCORES,
     "TBDF_plus_platform": TBDF + PLATFORM + PLATFORM_SCORES,
 }
+
+# ---- Offline track (pages imported from saved HTML, e.g. PhreshPhish) -------
+# TLS, WHOIS, DNS and cookies cannot be observed for a page that is no longer
+# live, so every feature derived from them is removed — including T2 and the
+# scores built on it (CSBI, C_apparent/C_earned, borrowed credibility, CSBI_PA).
+# Behavioural layers (T3, T4, T5) and kit/HTML evidence remain.
+_LIVE_ONLY = {"domain_age_days", "ssl_age_days", "registration_years", "whois_fallback_used",
+              "T2", "CSBI", "C_apparent", "C_earned", "borrowed_credibility", "CSBI_PA",
+              "tbdf_cn_info", "tbdf_cookie_domain", "p5_cross_site_redirect"}
+
+
+def _offline(cols: list[str]) -> list[str]:
+    return [c for c in cols if c not in _LIVE_ONLY]
+
+
+TBDF_OFFLINE = _offline(TBDF)
+FEATURE_SETS_OFFLINE: dict[str, list[str]] = {
+    "B1_url": URL,
+    "B2_tbdf": TBDF_OFFLINE,
+    "B3_url_html": URL + HTML,
+    "B4_csbi": _offline(URL + HTML + CSBI_LAYERS + CSBI_SCORES),
+    "OURS": _offline(URL + HTML + CSBI_LAYERS + CSBI_SCORES + PLATFORM + PLATFORM_SCORES),
+}
+ABLATIONS_OFFLINE: dict[str, list[str]] = {k: _offline(v) for k, v in ABLATIONS.items()}
+
 ALL_FEATURES = sorted({f for fs in list(FEATURE_SETS.values()) + list(ABLATIONS.values()) for f in fs})
 
 
@@ -87,6 +112,7 @@ def records_to_frame(rows: Iterable[dict]) -> pd.DataFrame:
             if k in r:
                 d[k] = r[k]
         d["_claimed_brand"] = f.get("_claimed_brand", "")
+        d["_kit"] = f.get("_kit")
         out.append(d)
     return pd.DataFrame(out)
 

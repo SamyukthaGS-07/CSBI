@@ -47,7 +47,8 @@ from sklearn.preprocessing import StandardScaler  # noqa: E402
 
 from evaluation.metrics import bootstrap_ci, compute_metrics  # noqa: E402
 from module5_decision.dataset import clean, load_store  # noqa: E402
-from module5_decision.features import ABLATIONS, FEATURE_SETS, matrix  # noqa: E402
+from module5_decision.features import (ABLATIONS, ABLATIONS_OFFLINE, FEATURE_SETS,  # noqa: E402
+                                      FEATURE_SETS_OFFLINE, matrix)
 
 try:
     from xgboost import XGBClassifier
@@ -159,6 +160,10 @@ def main() -> None:
     ap.add_argument("--models", default="lr,rf,xgb")
     ap.add_argument("--quick", action="store_true", help="xgb only, no ablations")
     ap.add_argument("--out", default=str(RESULTS))
+    ap.add_argument("--track", choices=["live", "offline", "all"], default="all",
+                    help="live: pages scanned live (TLS/WHOIS available); offline: imported "
+                         "saved HTML (PhreshPhish); all: both, using the offline feature sets "
+                         "so missing-by-design live signals cannot leak the source")
     args = ap.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -166,10 +171,20 @@ def main() -> None:
 
     print("dataset")
     df, log = clean(load_store(args.store))
+    offline = pd.to_numeric(df.get("meta_offline", 0), errors="coerce").fillna(0) == 1
+    if args.track == "live":
+        df = df[~offline].reset_index(drop=True)
+    elif args.track == "offline":
+        df = df[offline].reset_index(drop=True)
+    has_offline = bool(offline.any()) and args.track != "live"
+    base_sets, abl = ((FEATURE_SETS_OFFLINE, ABLATIONS_OFFLINE) if has_offline
+                      else (FEATURE_SETS, ABLATIONS))
+    print(f"  track={args.track}: {len(df):,} pages, feature sets = "
+          f"{'offline (no TLS/WHOIS)' if has_offline else 'live (full)'}")
     if df.y.nunique() < 2 or len(df) < 50:
-        sys.exit("not enough labelled pages to train — scan more first")
+        sys.exit("not enough labelled pages to train — scan or import more first")
     models = ["xgb"] if args.quick else args.models.split(",")
-    sets = dict(FEATURE_SETS) if args.quick else {**FEATURE_SETS, **ABLATIONS}
+    sets = dict(base_sets) if args.quick else {**base_sets, **abl}
 
     report = {
         "cleaning": log,
@@ -181,6 +196,8 @@ def main() -> None:
         "platforms_legit": Counter(df.loc[df.y == 0, "platform"].replace("", "(self-hosted)")).most_common(15),
         "sources": Counter(df.get("meta_source", pd.Series(dtype=str)).fillna("?")).most_common(),
         "n_groups": int(df["group"].nunique()),
+        "track": args.track,
+        "feature_sets": "offline" if has_offline else "live",
     }
     (out / "dataset_report.json").write_text(json.dumps(report, indent=2, default=str))
 
@@ -208,7 +225,7 @@ def main() -> None:
     (out / "confidence_intervals.json").write_text(json.dumps(ci, indent=2))
 
     print("\nproduction model (OURS, xgb, all data)")
-    cols = FEATURE_SETS["OURS"]
+    cols = base_sets["OURS"]
     model = fit_production(df, cols, "xgb")
     oof_s = oof["OURS|xgb"].to_numpy() if "OURS|xgb" in oof else None
     thr = {"medium": 0.35, "high": 0.65}

@@ -5,11 +5,10 @@ scripts/collect_live.py
 The phishing half of the dataset, collected the only way that works: scan each
 URL within hours of it being listed, before it is taken down.
 
-Every cycle it pulls the current OpenPhish feed (openphish.com, with the GitHub
-mirror as fallback) and, if PHISHTANK_API_KEY is set, PhishTank's online-valid
-list. Each URL not yet in the store is scanned immediately and stamped with:
+Every cycle it pulls every feed in module1_ingestion/feeds.py (OpenPhish,
+PhishStats, CERT Polska, phishunt, and PhishTank when PHISHTANK_API_KEY is set). Each URL not yet in the store is scanned immediately and stamped with:
 
-    meta_source        openphish / phishtank
+    meta_source        which feed listed it
     meta_listed_at     when the feed first showed it (UTC ISO time)
     meta_scanned_at    when we scanned it
     meta_lag_hours     scan time minus listing time
@@ -23,10 +22,7 @@ Leave it running (overnight or for a few days). Ctrl+C is safe.
 from __future__ import annotations
 
 import argparse
-import bz2
 import csv
-import io
-import os
 import sys
 import time
 from datetime import datetime, timezone
@@ -34,46 +30,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-import requests  # noqa: E402
-
 from common.scanner import scan_many  # noqa: E402
 from common.store import ScanStore  # noqa: E402
 
-FEEDS = {
-    "openphish": ["https://openphish.com/feed.txt",
-                  "https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt"],
-}
+from module1_ingestion.feeds import pull_all  # noqa: E402
+
 SEEN_LOG = Path("data/raw/live_seen.csv")
 
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
-
-
-def pull_openphish() -> list[str]:
-    for u in FEEDS["openphish"]:
-        try:
-            r = requests.get(u, timeout=30)
-            if r.ok and r.text.strip():
-                return [ln.strip() for ln in r.text.splitlines() if ln.strip().startswith("http")]
-        except Exception:
-            continue
-    return []
-
-
-def pull_phishtank() -> list[str]:
-    key = os.environ.get("PHISHTANK_API_KEY")
-    if not key:
-        return []
-    try:
-        r = requests.get(f"http://data.phishtank.com/data/{key}/online-valid.csv.bz2",
-                         timeout=120, headers={"User-Agent": "phishtank/csbi-research"})
-        r.raise_for_status()
-        rows = csv.DictReader(io.StringIO(bz2.decompress(r.content).decode("utf-8", "replace")))
-        return [row["url"] for row in rows if row.get("url")]
-    except Exception as e:  # noqa: BLE001
-        print(f"phishtank pull failed: {e}")
-        return []
 
 
 def load_seen() -> dict[str, str]:
@@ -97,7 +63,8 @@ def cycle(store: ScanStore, workers: int, max_per_cycle: int) -> None:
     seen = load_seen()
     listed_now = _now()
     batch: dict[str, str] = {}
-    for src, urls in (("openphish", pull_openphish()), ("phishtank", pull_phishtank())):
+    for src, urls in pull_all().items():
+        print(f"  {src:<11}{len(urls):>6,} listed")
         for u in urls:
             if u not in seen and u not in batch:
                 batch[u] = src

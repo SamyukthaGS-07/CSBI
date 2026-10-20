@@ -46,6 +46,9 @@
   @media (max-width: 760px) { .figs { grid-template-columns: 1fr; } }
   .figs img { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
   .scroll { overflow-x: auto; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .tile .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tile .k { color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
@@ -54,6 +57,11 @@
     <h1>CSBI-PA Console</h1>
     <p>Platform-aware phishing detection — live scanner, evaluation results and known campaigns.</p>
   </header>
+
+  <section class="card">
+    <h2>Collected so far</h2>
+    <div id="stats" class="tiles"><span class="muted">Loading…</span></div>
+  </section>
 
   <section class="card">
     <h2>Scan a URL</h2>
@@ -154,7 +162,16 @@ async function camps() {
     el("tbody", {}, c.slice(0, 40).map((x) => el("tr", {}, [el("td", { text: x.cluster_id }), el("td", { text: x.label }),
       el("td", { class: "n", text: x.size }), el("td", { class: "mono", text: x.example })]))));
 }
-results(); camps();
+async function stats() {
+  try {
+    const s = await (await fetch("/stats")).json();
+    const t = [["Phishing pages", s.phishing], ["Legitimate pages", s.legit],
+               ["Phishing, last 24 h", s.phishing_last_24h], ["Campaigns", s.campaigns]];
+    $("stats").replaceChildren(...t.map(([k, v]) => el("div", { class: "tile" }, [
+      el("div", { class: "v", text: Number(v || 0).toLocaleString() }), el("div", { class: "k", text: k })])));
+  } catch { $("stats").textContent = "Stats unavailable."; }
+}
+results(); camps(); stats(); setInterval(stats, 60000);
 </script>
 </body>
 </html>

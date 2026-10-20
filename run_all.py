@@ -7,12 +7,13 @@ the results report. Works on Windows, macOS and Linux.
     python run_all.py legit          scan the legitimate lists (~1-2 h)
     python run_all.py collect 12     scan newly listed phishing for 12 hours
     python run_all.py results        train, run experiments, build index, report
-    python run_all.py serve          start the API + dashboard on :8000
+    python run_all.py serve          start the API + dashboard on :8000 (this machine only)
+    python run_all.py serve public   same, reachable at http://<server-ip>:8000 (cloud VM)
     python run_all.py status         what is in the store right now
 
 `collect` is the step that needs time: phishing pages die within hours, so they
-are scanned as they get listed. Run it for as long as you can (12-48 h gives a
-few thousand live phishing pages). Everything is resumable; Ctrl+C is safe.
+are scanned as they get listed. Run it for as long as you can (expect a few
+hundred live phishing pages per day). Everything is resumable; Ctrl+C is safe.
 """
 from __future__ import annotations
 
@@ -68,8 +69,10 @@ def results() -> None:
     print("\nDone. Open results/REPORT.md, or run:  python run_all.py serve")
 
 
-def serve() -> None:
-    run(PY, "-m", "uvicorn", "backend.main:app", "--host", "127.0.0.1", "--port", "8000")
+def serve(public: bool = False) -> None:
+    # public: listen on all interfaces so http://<server-ip>:8000 works (cloud VM)
+    run(PY, "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0" if public else "127.0.0.1",
+        "--port", "8000")
 
 
 def status() -> None:
@@ -87,7 +90,7 @@ if __name__ == "__main__":
     elif cmd == "results":
         results()
     elif cmd == "serve":
-        serve()
+        serve(public=len(sys.argv) > 2 and sys.argv[2] == "public")
     elif cmd == "status":
         status()
     else:
