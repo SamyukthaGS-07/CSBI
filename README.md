@@ -70,7 +70,49 @@ step is resumable; Ctrl+C is safe.
 
 **Browser extension:** open `chrome://extensions`, enable *Developer mode*,
 click *Load unpacked* and choose the `extension/` folder. Keep `run_all.py serve`
-running.
+running. For a remote server, set the API address in the extension's Settings.
+
+### Training data from PhreshPhish (Kaggle or Colab, no local machine needed)
+
+`notebooks/phreshphish_colab.ipynb` streams a balanced sample of
+[PhreshPhish](https://huggingface.co/datasets/phreshphish/phreshphish)
+(CC-BY-4.0, anti-phishing research only), runs the saved HTML through every
+layer offline, trains all models and baselines, runs the campaign experiments,
+and packages `csbi_results.zip`.
+
+On Kaggle: *File → Import Notebook → GitHub* (`SamyukthaGS-07/CSBI`, branch
+`full-build`), *Settings → Internet: On*, then *Save Version → Save & Run All*.
+It runs in the background (~1.5–2.5 h for 16k pages). Download the zip from the
+version's *Output* tab.
+
+Offline pages carry no TLS / WHOIS / DNS evidence, so they are tagged
+`meta_offline = 1` and training uses the offline feature sets
+(`train.py --track offline|live|all`).
+
+### Running on a cloud VM (Ubuntu, e.g. Azure for Students, B2s)
+
+Open inbound TCP port 8000, then:
+
+```bash
+sudo apt update && sudo apt install -y python3-venv git tmux unzip
+git clone -b full-build https://github.com/SamyukthaGS-07/CSBI.git && cd CSBI
+python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+
+tmux new -s scan     # then: python run_all.py setup && python run_all.py collect 60   (Ctrl+B D)
+tmux new -s web      # then: python run_all.py serve public                              (Ctrl+B D)
+tmux new -s legit    # then: python run_all.py legit                                     (Ctrl+B D)
+```
+
+The dashboard is at `http://<server-ip>:8000`. Scanner processes share the free
+IP-lookup rate limit, so `collect` and `legit` can run at the same time.
+
+To add the PhreshPhish results to the server's live scans and retrain:
+
+```bash
+unzip -o csbi_results.zip -d phresh
+python scripts/merge_store.py phresh/data/store/scans.db
+python run_all.py results          # then restart the web session
+```
 
 ## Repository map
 
