@@ -3,242 +3,417 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CSBI-PA Console</title>
+<title>CSBI-PA — Threat Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f7f7f5; --card: #ffffff; --ink: #0b0b0b; --muted: #52514e; --line: #e6e5e0;
-    --accent: #2a78d6; --high: #C62828; --med: #C77700; --low: #2E7D32; --soft: #F2F6FB;
+  :root{
+    --canvas:#eef1f5; --surface:#ffffff; --surface-2:#f7f9fb;
+    --ink:#161c26; --muted:#5d6775; --faint:#8b94a3; --line:#e3e7ed;
+    --sidebar:#121a2e; --sidebar-2:#1b2540; --sidebar-ink:#c6cedd; --sidebar-faint:#7c88a0;
+    --accent:#2f6df6; --accent-soft:#e8f0ff;
+    --danger:#e5484d; --danger-soft:#fdecec; --warn:#c77700; --warn-soft:#fdf3e2;
+    --good:#2faa6b; --good-soft:#e7f6ee;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg: #141413; --card: #1d1d1c; --ink: #f0efec; --muted: #b5b4ac;
-      --line: #33332f; --accent: #3987e5; --high: #ef6b6b; --med: #e0a03a; --low: #5cb860; --soft: #1f2a38; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--canvas);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:14px;line-height:1.5;display:flex}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  a{color:inherit}
+  h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
+
+  /* ---- sidebar ---- */
+  .side{width:244px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-ink);
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .brand{padding:22px 22px 18px;display:flex;align-items:center;gap:11px}
+  .brand .mark{width:30px;height:30px;flex-shrink:0}
+  .brand b{color:#fff;font-size:16px;font-weight:700;letter-spacing:-.02em;display:block}
+  .brand span{color:var(--sidebar-faint);font-size:11px}
+  .nav{padding:8px 12px;display:flex;flex-direction:column;gap:2px}
+  .nav button{all:unset;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;
+    color:var(--sidebar-ink);font-size:14px;cursor:pointer;transition:background .12s}
+  .nav button:hover{background:var(--sidebar-2)}
+  .nav button.on{background:var(--accent);color:#fff;font-weight:600}
+  .nav button.on svg{opacity:1}
+  .nav svg{width:17px;height:17px;flex-shrink:0;opacity:.72}
+  .side .spacer{flex:1}
+  .statuscard{margin:12px;padding:13px 14px;background:var(--sidebar-2);border-radius:11px}
+  .statuscard .row{display:flex;align-items:center;gap:8px;color:#fff;font-size:12.5px;font-weight:600}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(47,170,107,.6);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,170,107,.5)}70%{box-shadow:0 0 0 7px rgba(47,170,107,0)}100%{box-shadow:0 0 0 0 rgba(47,170,107,0)}}
+  .statuscard .nums{margin-top:9px;color:var(--sidebar-faint);font-size:12px;line-height:1.7}
+  .statuscard .nums b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums}
+
+  /* ---- main ---- */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .head{background:var(--surface);border-bottom:1px solid var(--line);padding:20px 32px 0;flex-shrink:0}
+  .head .titlerow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+  .head h1{font-size:21px}
+  .head .desc{color:var(--muted);font-size:13.5px;margin-top:4px;max-width:70ch}
+  .livepill{display:inline-flex;align-items:center;gap:7px;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:999px;padding:6px 13px;font-size:12.5px;color:var(--muted);white-space:nowrap}
+  .subtabs{display:flex;gap:2px;margin-top:16px}
+  .subtabs button{all:unset;padding:10px 15px;font-size:13.5px;color:var(--muted);cursor:pointer;
+    border-bottom:2px solid transparent;margin-bottom:-1px}
+  .subtabs button:hover{color:var(--ink)}
+  .subtabs button.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+  .scroll{overflow:auto;padding:26px 32px 40px;flex:1}
+
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+  .panel .ph{padding:16px 20px;border-bottom:1px solid var(--line)}
+  .panel .ph h2{font-size:15px}
+  .panel .ph p{margin:3px 0 0;color:var(--muted);font-size:12.5px}
+  .pb{padding:20px}
+
+  /* kpi */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .kpi .v{font-size:30px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+  .kpi .k{color:var(--muted);font-size:12.5px;margin-top:5px}
+  .kpi .accent{position:absolute;left:0;top:0;bottom:0;width:3px}
+  .kpi.p .accent{background:var(--danger)} .kpi.l .accent{background:var(--good)}
+  .kpi.c .accent{background:var(--accent)} .kpi.r .accent{background:var(--warn)}
+
+  .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+  @media(max-width:1040px){.grid2{grid-template-columns:1fr}}
+
+  /* free-hosted bar */
+  .fhbar{height:30px;border-radius:7px;overflow:hidden;display:flex;margin:6px 0 10px}
+  .fhbar .free{background:var(--danger)} .fhbar .self{background:#c3cbd6}
+  .fhbar div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600}
+  .legendline{display:flex;gap:18px;color:var(--muted);font-size:12.5px}
+  .legendline i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+  thead th{color:var(--faint);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:var(--surface-2)}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  tbody tr:last-child td{border-bottom:0}
+  tr.ours td{background:var(--accent-soft);font-weight:600}
+  tr.base td{color:var(--danger)}
+  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+  .tag.win{background:var(--good-soft);color:var(--good)}
+  .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px}
+  .seg button{all:unset;padding:6px 13px;font-size:12.5px;color:var(--muted);cursor:pointer;border-radius:7px}
+  .seg button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(16,24,40,.08)}
+
+  /* scan */
+  .scanbox{display:flex;gap:10px;flex-wrap:wrap}
+  .scanbox input{flex:1 1 340px;min-width:0;padding:12px 14px;font:inherit;border:1px solid var(--line);
+    border-radius:10px;background:var(--surface-2)}
+  .scanbox input:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff}
+  .btn{all:unset;background:var(--accent);color:#fff;font-weight:600;padding:12px 20px;border-radius:10px;cursor:pointer;text-align:center}
+  .btn:hover{background:#2a61da}
+  .verdict{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+  .riskbadge{font-size:17px;font-weight:700;padding:6px 14px;border-radius:9px}
+  .riskbadge.HIGH{background:var(--danger-soft);color:var(--danger)}
+  .riskbadge.MEDIUM{background:var(--warn-soft);color:var(--warn)}
+  .riskbadge.LOW{background:var(--good-soft);color:var(--good)}
+  .prob{color:var(--muted);font-variant-numeric:tabular-nums}
+  .reasons{margin:10px 0 0;padding-left:18px}
+  .reasons li{margin:5px 0}
+  .callout{background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 13px;margin-top:12px;font-size:13px}
+  .bars{display:grid;grid-template-columns:120px 1fr 46px;gap:9px 11px;align-items:center;margin-top:4px}
+  .track{height:9px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;overflow:hidden}
+  .fill{height:100%}
+  .num{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px}
+
+  /* figures */
+  .figrow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:1040px){.figrow{grid-template-columns:1fr}}
+  .figrow img, .figwide img{width:100%;display:block;border-radius:10px;border:1px solid var(--line);background:#fff}
+
+  /* campaign map */
+  #map{width:100%;height:auto;background:#fbfcfe;border:1px solid var(--line);border-radius:12px}
+  #map circle{transition:r .1s} #map circle:hover{stroke:var(--ink);stroke-width:1.4}
+  .maplegend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px}
+  .maplegend span{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+  .maplegend i{width:11px;height:11px;border-radius:50%}
+
+  .muted{color:var(--muted)}
+  .empty{color:var(--faint);padding:28px;text-align:center}
+  .hidden{display:none !important}
+
+  @media(max-width:860px){
+    body{flex-direction:column}
+    .side{width:100%;height:auto;position:static;flex-direction:row;align-items:center;overflow-x:auto}
+    .brand{padding:14px 16px}.nav{flex-direction:row;padding:8px}.side .spacer,.statuscard{display:none}
+    .scroll{padding:20px 16px 40px}.kpis{grid-template-columns:repeat(2,1fr)}
   }
-  :root[data-theme="dark"] { --bg: #141413; --card: #1d1d1c; --ink: #f0efec; --muted: #b5b4ac;
-      --line: #33332f; --accent: #3987e5; --high: #ef6b6b; --med: #e0a03a; --low: #5cb860; --soft: #1f2a38; }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 16px 60px; }
-  header h1 { font-size: 22px; margin: 0; }
-  header p { margin: 4px 0 0; color: var(--muted); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-top: 18px; }
-  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 12px; }
-  form { display: flex; gap: 8px; flex-wrap: wrap; }
-  input[type=url] { flex: 1 1 320px; min-width: 0; padding: 10px 12px; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
-  button { font: inherit; padding: 10px 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font-weight: 600; cursor: pointer; }
-  .muted { color: var(--muted); }
-  .verdict { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; margin-top: 16px; }
-  .lvl { font-size: 24px; font-weight: 700; }
-  .HIGH { color: var(--high); } .MEDIUM { color: var(--med); } .LOW { color: var(--low); }
-  .mono { font-family: ui-monospace, Consolas, monospace; font-size: 13px; color: var(--muted); word-break: break-all; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
-  .bars { display: grid; grid-template-columns: 110px 1fr 44px; gap: 8px 10px; align-items: center; }
-  .track { height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; }
-  .fill { height: 100%; border-radius: 5px; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
-  .note { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 10px; margin-top: 10px; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); }
-  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
-  td.n { text-align: right; font-variant-numeric: tabular-nums; }
-  tr.ours td { font-weight: 650; }
-  .figs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 760px) { .figs { grid-template-columns: 1fr; } }
-  .figs img { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
-  .scroll { overflow-x: auto; }
-  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-  .tile .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .tile .k { color: var(--muted); font-size: 13px; }
-  #map { width: 100%; height: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
-  #map circle { transition: r .1s; }
-  #map circle:hover { stroke: var(--ink); stroke-width: 1.5; }
-  .maplegend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 4px; }
-  .maplegend span { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
-  .maplegend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>CSBI-PA Console</h1>
-    <p>Platform-aware phishing detection — live scanner, evaluation results and known campaigns.</p>
-  </header>
+<aside class="side">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 32 32" fill="none"><path d="M16 2l12 4.5v8.2c0 7.6-5 13-12 15.3-7-2.3-12-7.7-12-15.3V6.5L16 2z" fill="#2f6df6"/><path d="M10.5 16.2l3.7 3.8 7.3-7.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div><b>CSBI-PA</b><span>Threat Console</span></div>
+  </div>
+  <nav class="nav" id="nav">
+    <button data-tab="overview" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Overview</button>
+    <button data-tab="scan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>Scan a URL</button>
+    <button data-tab="results"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke-linecap="round"/></svg>Results</button>
+    <button data-tab="campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="17" r="2.5"/><path d="M8 7l8 .6M7.5 8l3.5 7M16.5 9l-3.5 6"/></svg>Campaigns</button>
+    <button data-tab="zeroday"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l9 16H3L12 3z" stroke-linejoin="round"/><path d="M12 10v4M12 17v.5" stroke-linecap="round"/></svg>Zero-day watch</button>
+  </nav>
+  <div class="spacer"></div>
+  <div class="statuscard">
+    <div class="row"><span class="dot"></span> Live — collecting</div>
+    <div class="nums" id="sidenums">Connecting…</div>
+  </div>
+</aside>
 
-  <section class="card">
-    <h2>Collected so far</h2>
-    <div id="stats" class="tiles"><span class="muted">Loading…</span></div>
-  </section>
-
-  <section class="card">
-    <h2>Scan a URL</h2>
-    <form id="f">
-      <input id="u" type="url" placeholder="https://example.pages.dev/" required aria-label="URL to scan">
-      <button type="submit">Scan</button>
-    </form>
-    <div id="out"></div>
-  </section>
-
-  <section class="card">
-    <h2>Results</h2>
-    <div id="headline" class="muted">No results yet — run <code>python run_all.py results</code>.</div>
-    <div class="scroll"><table id="cv"></table></div>
-    <div class="figs" id="figs"></div>
-  </section>
-
-  <section class="card">
-    <h2>Zero-day watch — Certificate Transparency</h2>
-    <p class="muted" style="margin-top:0">Brand-impersonation domains flagged the moment their TLS certificate was issued, then scored by the model — before they appear in any feed.</p>
-    <div class="scroll"><table id="ct"></table></div>
-  </section>
-
-  <section class="card">
-    <h2>Campaign map — phishing kits clustered</h2>
-    <div id="mapwrap">
-      <p class="muted" id="maphint">No campaigns yet — this fills in once phishing pages are scanned and clustered.</p>
-      <svg id="map" viewBox="0 0 640 460" role="img" aria-label="Scatter plot of phishing pages grouped by kit" style="display:none"></svg>
-      <div id="maplegend" class="maplegend"></div>
+<main class="main">
+  <header class="head">
+    <div class="titlerow">
+      <div><h1 id="h1">Overview</h1><div class="desc" id="desc"></div></div>
+      <div class="livepill"><span class="dot"></span><span id="pill">live</span></div>
     </div>
-    <div class="scroll"><table id="camps"></table></div>
-  </section>
-</div>
+    <div class="subtabs hidden" id="subtabs"></div>
+  </header>
+  <div class="scroll" id="scroll"></div>
+</main>
+
+<template id="tpl-overview">
+  <div class="kpis">
+    <div class="kpi p"><span class="accent"></span><div class="v" data-kpi="phishing">—</div><div class="k">Phishing pages captured</div></div>
+    <div class="kpi l"><span class="accent"></span><div class="v" data-kpi="legit">—</div><div class="k">Legitimate pages</div></div>
+    <div class="kpi c"><span class="accent"></span><div class="v" data-kpi="campaigns">—</div><div class="k">Campaigns discovered</div></div>
+    <div class="kpi r"><span class="accent"></span><div class="v" data-kpi="phishing_last_24h">—</div><div class="k">Phishing, last 24 h</div></div>
+  </div>
+  <div class="grid2">
+    <div class="panel"><div class="ph"><h2>The free-hosted blind spot</h2><p>Where phishing hides, and where the base-paper features stop working.</p></div>
+      <div class="pb">
+        <div class="fhbar" id="fhbar"></div>
+        <div class="legendline"><span><i style="background:var(--danger)"></i>Free-hosted (pages.dev, vercel.app, …)</span><span><i style="background:#c3cbd6"></i>Self-hosted</span></div>
+        <p class="muted" id="fhnote" style="margin:14px 0 0;font-size:13px"></p>
+      </div>
+    </div>
+    <div class="panel"><div class="ph"><h2>How it works</h2></div>
+      <div class="pb" style="font-size:13.5px;color:var(--muted);line-height:1.65">
+        <p style="margin:0 0 10px">A scam page on a free host borrows the platform's certificate, IP and domain age, so it looks trustworthy. CSBI-PA measures the gap between the trust a page <em>shows</em> and the trust it has <em>earned</em>.</p>
+        <p style="margin:0">Pages are then grouped by the phishing <strong>kit</strong> they were built from, so one confirmed scam flags its whole campaign — and brand-new certificates are screened the moment they're issued.</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-scan">
+  <div class="panel" style="max-width:860px">
+    <div class="ph"><h2>Check a site</h2><p>Enter a URL. The engine fetches the page, its certificate and WHOIS, and returns a verdict with the reasons.</p></div>
+    <div class="pb">
+      <form class="scanbox" id="scanform">
+        <input id="url" type="url" placeholder="https://example.pages.dev/" required aria-label="URL to scan">
+        <button class="btn" type="submit">Scan</button>
+      </form>
+      <div id="scanout" style="margin-top:18px"></div>
+    </div>
+  </div>
+</template>
+
+<template id="tpl-results">
+  <div id="res-headline" class="muted" style="margin:-6px 0 18px;font-size:13px"></div>
+  <div data-sub="table" class="panel"><div class="ph" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div><h2>Detection — model comparison</h2><p>Campaign-disjoint 5-fold cross-validation.</p></div>
+      <div class="seg" id="subsetseg"></div></div>
+    <div style="overflow:auto"><table id="cv"></table></div></div>
+  <div data-sub="charts" class="hidden"><div class="figrow" id="res-charts"></div></div>
+  <div data-sub="ablation" class="hidden"><div class="figrow" id="res-ablation"></div></div>
+</template>
+
+<template id="tpl-campaigns">
+  <div data-sub="map" class="panel"><div class="ph"><h2>Phishing kits, clustered</h2><p>Each dot is a phishing page; colour marks the campaign it belongs to. Hover a point for details.</p></div>
+    <div class="pb"><p class="empty" id="maphint">No campaigns yet — this fills in once phishing pages are scanned and clustered.</p>
+      <svg id="map" viewBox="0 0 640 460" role="img" aria-label="Phishing pages grouped by kit" style="display:none"></svg>
+      <div class="maplegend" id="maplegend"></div></div></div>
+  <div data-sub="list" class="hidden panel"><div class="ph"><h2>Campaigns</h2><p>Largest campaigns by page count, with the brand and platforms they abuse.</p></div>
+    <div style="overflow:auto"><table id="camps"></table></div></div>
+</template>
+
+<template id="tpl-zeroday">
+  <div class="panel"><div class="ph"><h2>Zero-day watch — Certificate Transparency</h2>
+    <p>Brand-impersonation domains flagged the moment their TLS certificate is issued, then scored by the model — before they reach any feed.</p></div>
+    <div style="overflow:auto"><table id="ct"></table></div></div>
+</template>
+
 <script>
-const $ = (id) => document.getElementById(id);
+const $ = (s, r=document) => r.querySelector(s);
 function el(tag, attrs = {}, kids = []) {
   const e = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) {
-    if (k === "text") e.textContent = v; else if (k === "style") e.style.cssText = v; else e.setAttribute(k, v);
-  }
-  kids.forEach((k) => k && e.appendChild(k));
+  for (const [k, v] of Object.entries(attrs)) { if (k === "text") e.textContent = v; else if (k === "html") e.innerHTML = v; else e.setAttribute(k, v); }
+  (Array.isArray(kids) ? kids : [kids]).forEach((k) => k && e.appendChild(k));
   return e;
 }
-function bar(label, v, color, max = 1) {
-  const x = Math.max(0, Math.min(max, Number(v) || 0));
-  return [el("span", { text: label }),
-    el("div", { class: "track" }, [el("div", { class: "fill", style: `width:${100 * x / max}%;background:${color}` })]),
-    el("span", { class: "num", text: max === 1 ? x.toFixed(2) : String(Math.round(x)) })];
-}
-$("f").onsubmit = async (e) => {
-  e.preventDefault();
-  const out = $("out");
-  out.replaceChildren(el("p", { class: "muted", text: "Scanning… (TLS, WHOIS and the page itself; up to ~20 s)" }));
-  try {
-    const r = await fetch("/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: $("u").value }) });
-    const v = await r.json();
-    if (!r.ok) throw new Error(v.detail || r.status);
-    const label = { HIGH: "Likely phishing", MEDIUM: "Suspicious", LOW: "Looks safe" }[v.risk_level] || v.risk_level;
-    const s = v.scores || {};
-    const left = el("div", {}, [
-      el("h2", { text: "Why" }),
-      el("ul", {}, (v.reasons || []).map((t) => el("li", { text: t }))),
-    ]);
-    if (v.campaign) left.append(el("div", { class: "note", text: `Kit match: ${v.campaign}` }));
-    if (v.free_hosted && (s.borrowed_credibility || 0) > 0.2)
-      left.append(el("div", { class: "note", text: `Hosted on ${v.platform}: certificate, IP and domain age belong to the platform (borrowed credibility ${(+s.borrowed_credibility).toFixed(2)}).` }));
-    const right = v.allowlisted ? el("div") : el("div", {}, [
-      el("h2", { text: "Scores" }),
-      el("div", { class: "bars" }, [
-        ...bar("Apparent trust", s.C_apparent, "#9FB8D8"), ...bar("Earned trust", s.C_earned, "var(--accent)"),
-        ...bar("T3 behaviour", s.T3, "#8f8d86"), ...bar("T4 UPI", s.T4, "#8f8d86"), ...bar("T5 platform", s.T5, "#8f8d86"),
-        ...bar("CSBI", s.CSBI, "#5f5e59", 100), ...bar("CSBI-PA", s.CSBI_PA, "var(--high)", 100),
-      ]),
-    ]);
-    out.replaceChildren(
-      el("div", { class: "verdict" }, [
-        el("span", { class: `lvl ${v.risk_level}`, text: label }),
-        el("span", { class: "muted", text: `${Math.round((v.scam_probability || 0) * 100)}% phishing probability` }),
-      ]),
-      el("div", { class: "mono", text: v.url }),
-      el("div", { class: "grid2", style: "margin-top:12px" }, [left, right]));
-  } catch (err) {
-    out.replaceChildren(el("p", { class: "HIGH", text: `Scan failed: ${err.message}` }));
-  }
+const NAMES = { B1_url:"URL only", B2_tbdf:"TBDF (Mishra & Varshney 2025)", B3_url_html:"URL + HTML",
+  B4_csbi:"CSBI layers 1-4", OURS:"CSBI-PA (ours)" };
+
+const TABS = {
+  overview:{title:"Overview", desc:"Live state of the detection system and the problem it targets."},
+  scan:{title:"Scan a URL", desc:"Score any site in real time."},
+  results:{title:"Results", desc:"How CSBI-PA compares with the base paper and the baselines, on real data.",
+    subs:[["table","Comparison"],["charts","Charts"],["ablation","Ablation"]]},
+  campaigns:{title:"Campaigns", desc:"Phishing kits reused across many pages, grouped automatically.",
+    subs:[["map","Map"],["list","List"]]},
+  zeroday:{title:"Zero-day watch", desc:"New brand-impersonation domains caught from Certificate Transparency."},
 };
-const NAMES = { B1_url: "URL only", B2_tbdf: "TBDF (Mishra & Varshney 2025)", B3_url_html: "URL + HTML",
-  B4_csbi: "CSBI layers 1-4", OURS: "CSBI-PA (ours)" };
-async function results() {
-  const r = await fetch("/results/summary");
-  if (!r.ok) return;
-  const d = await r.json();
-  if (!d.rows || !d.rows.length) return;
-  $("headline").textContent = `${d.dataset.n.toLocaleString()} pages (${d.dataset.n_phish.toLocaleString()} phishing, ` +
-    `${d.dataset.n_legit.toLocaleString()} legitimate; ${d.dataset.n_free_hosted.toLocaleString()} free-hosted). ` +
-    `XGBoost, campaign-disjoint 5-fold cross-validation.`;
-  const head = el("tr", {}, ["Feature set", "Subset", "Precision", "Recall", "F1", "ROC-AUC", "TPR @ 1% FPR"].map((t) => el("th", { text: t })));
-  const rows = d.rows.map((x) => el("tr", { class: x.features === "OURS" ? "ours" : "" }, [
-    el("td", { text: NAMES[x.features] || x.features }), el("td", { text: x.subset.replace("_", " ") }),
-    ...["precision", "recall", "f1", "roc_auc", "tpr_at_1fpr"].map((k) => el("td", { class: "n", text: (+x[k]).toFixed(3) }))]));
-  $("cv").replaceChildren(el("thead", {}, [head]), el("tbody", {}, rows));
-  $("figs").replaceChildren(...d.figures.map((f) => el("img", { src: `/results/figures/${f}`, alt: f.replace(/_/g, " ").replace(".png", "") })));
+let current = "overview", lastStats = null, lastResults = null;
+
+function setTab(name){
+  current = name;
+  $("#nav").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.tab === name));
+  const t = TABS[name];
+  $("#h1").textContent = t.title; $("#desc").textContent = t.desc;
+  const st = $("#subtabs");
+  if (t.subs){ st.classList.remove("hidden"); st.replaceChildren(...t.subs.map(([k,label],i)=>{
+    const b = el("button",{text:label}); b.classList.toggle("on", i===0); b.onclick=()=>setSub(name,k,b); return b; }));
+  } else st.classList.add("hidden");
+  const scroll = $("#scroll"); scroll.replaceChildren($("#tpl-"+name).content.cloneNode(true));
+  RENDER[name] && RENDER[name]();
 }
-async function camps() {
-  const r = await fetch("/campaigns");
-  const c = await r.json();
-  if (!c.length) { $("camps").replaceChildren(el("tr", {}, [el("td", { class: "muted", text: "No campaigns yet." })])); return; }
-  $("camps").replaceChildren(
-    el("thead", {}, [el("tr", {}, ["#", "Campaign", "Pages", "Example"].map((t) => el("th", { text: t })))]),
-    el("tbody", {}, c.slice(0, 40).map((x) => el("tr", {}, [el("td", { text: x.cluster_id }), el("td", { text: x.label }),
-      el("td", { class: "n", text: x.size }), el("td", { class: "mono", text: x.example })]))));
+function setSub(tab, key, btn){
+  $("#subtabs").querySelectorAll("button").forEach(b=>b.classList.toggle("on", b===btn));
+  $("#scroll").querySelectorAll("[data-sub]").forEach(s=>s.classList.toggle("hidden", s.dataset.sub!==key));
 }
-async function stats() {
-  try {
-    const s = await (await fetch("/stats")).json();
-    const t = [["Phishing pages", s.phishing], ["Legitimate pages", s.legit],
-               ["Phishing, last 24 h", s.phishing_last_24h], ["Campaigns", s.campaigns]];
-    $("stats").replaceChildren(...t.map(([k, v]) => el("div", { class: "tile" }, [
-      el("div", { class: "v", text: Number(v || 0).toLocaleString() }), el("div", { class: "k", text: k })])));
-  } catch { $("stats").textContent = "Stats unavailable."; }
+$("#nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setTab(b.dataset.tab); });
+
+/* ---------- data ---------- */
+async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json(); }
+
+async function refreshStats(){
+  try{ lastStats = await getJSON("/stats"); }catch{ return; }
+  const s = lastStats;
+  $("#sidenums").innerHTML = `<b>${(s.phishing||0).toLocaleString()}</b> phishing · <b>${(s.legit||0).toLocaleString()}</b> legit<br><b>${(s.campaigns||0).toLocaleString()}</b> campaigns`;
+  $("#pill").textContent = `${(s.phishing||0).toLocaleString()} phishing · ${(s.campaigns||0).toLocaleString()} campaigns`;
+  if (current === "overview") fillOverview();
 }
-const SVGNS = "http://www.w3.org/2000/svg";
-function sel(tag, attrs) {
-  const e = document.createElementNS(SVGNS, tag);
-  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
-  return e;
+
+function fillOverview(){
+  const s = lastStats || {};
+  document.querySelectorAll("[data-kpi]").forEach(e=>{ const v = s[e.dataset.kpi]; e.textContent = v==null?"—":Number(v).toLocaleString(); });
+  const d = lastResults && lastResults.dataset;
+  if (d && d.n_phish){
+    const free = d.n_free_hosted, self = Math.max(0, d.n_phish + d.n_legit - free);
+    const total = free + self || 1, fp = Math.round(100*free/total);
+    const bar = $("#fhbar"); if (bar){
+      bar.replaceChildren(
+        el("div",{class:"free",style:`width:${fp}%`,text:fp>8?fp+"%":""}),
+        el("div",{class:"self",style:`width:${100-fp}%`,text:(100-fp)>8?(100-fp)+"%":""}));
+      $("#fhnote").textContent = `${free.toLocaleString()} of the ${total.toLocaleString()} pages sit on shared free-hosting platforms. Across two years of OpenPhish history the share is 42.9% — the subset the base paper's certificate and domain features cannot read.`;
+    }
+  } else { const n=$("#fhnote"); if(n) n.textContent="Collecting — the breakdown appears once results are built."; }
 }
-async function campaignMap() {
-  let d;
-  try { d = await (await fetch("/campaign_map")).json(); } catch { return; }
-  if (!d.points || d.points.length < 3) return;
-  const svg = $("map"), W = 640, H = 460, pad = 18;
-  $("maphint").style.display = "none";
-  svg.style.display = "block";
-  svg.replaceChildren();
-  const xs = d.points.map((p) => p.x), ys = d.points.map((p) => p.y);
-  const xmin = Math.min(...xs), xmax = Math.max(...xs), ymin = Math.min(...ys), ymax = Math.max(...ys);
-  const sx = (x) => pad + (W - 2 * pad) * (x - xmin) / (xmax - xmin || 1);
-  const sy = (y) => pad + (H - 2 * pad) * (y - ymin) / (ymax - ymin || 1);
-  const colour = {}; (d.campaigns || []).forEach((c) => { colour[c.id] = c.color; });
-  const meta = {}; (d.campaigns || []).forEach((c) => { meta[c.id] = c; });
-  for (const p of d.points) {
-    const c = sel("circle", { cx: sx(p.x).toFixed(1), cy: sy(p.y).toFixed(1),
-      r: p.c < 0 ? 2.5 : 4, fill: p.c < 0 ? (d.noise_color || "#c7c6c1") : (colour[p.c] || "#c7c6c1"),
-      "fill-opacity": p.c < 0 ? 0.5 : 0.85 });
-    const m = meta[p.c];
-    const t = sel("title", {});
-    t.textContent = p.c < 0 ? "unclustered page" : `${m ? m.brand : "campaign"} · ${m ? m.platforms.join("/") : ""} (${m ? m.size : "?"} pages)`;
-    c.appendChild(t);
-    svg.appendChild(c);
+
+async function fillScan(){
+  $("#scanform").onsubmit = async (e)=>{
+    e.preventDefault();
+    const out = $("#scanout");
+    out.replaceChildren(el("p",{class:"muted",text:"Scanning… fetching the page, certificate and WHOIS (up to ~20 s)."}));
+    try{
+      const v = await (await fetch("/scan",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url:$("#url").value})})).json();
+      renderVerdict(out, v);
+    }catch(err){ out.replaceChildren(el("p",{style:"color:var(--danger)",text:"Scan failed. Is the engine running? "+err.message})); }
+  };
+}
+function bar(label,v,color,max=1){ const x=Math.max(0,Math.min(max,Number(v)||0));
+  return [el("span",{text:label}), el("div",{class:"track"},[el("div",{class:"fill",style:`width:${100*x/max}%;background:${color}`})]),
+    el("span",{class:"num",text:max===1?x.toFixed(2):Math.round(x)})]; }
+function renderVerdict(out, v){
+  const label = {HIGH:"Likely phishing",MEDIUM:"Suspicious",LOW:"Looks safe"}[v.risk_level]||v.risk_level;
+  const head = el("div",{class:"verdict"},[el("span",{class:`riskbadge ${v.risk_level}`,text:label}),
+    el("span",{class:"prob",text:`${Math.round((v.scam_probability||0)*100)}% phishing probability`})]);
+  const host = el("div",{class:"mono muted",style:"word-break:break-all;margin-bottom:12px",text:v.url});
+  if (v.allowlisted){ out.replaceChildren(head,host,el("p",{class:"muted",text:"Well-known popular site — not analysed."})); return; }
+  const s = v.scores||{};
+  const left = el("div",{},[el("h3",{style:"font-size:13px;color:var(--muted);margin-bottom:6px",text:"Why"}),
+    el("ul",{class:"reasons"},(v.reasons||[]).map(t=>el("li",{text:t})))]);
+  if (v.campaign) left.append(el("div",{class:"callout",text:`Matches a known campaign: ${v.campaign}`}));
+  if (v.free_hosted && (s.borrowed_credibility||0)>0.2)
+    left.append(el("div",{class:"callout",text:`Hosted on ${v.platform}: the certificate, IP and domain age belong to the platform (borrowed credibility ${(+s.borrowed_credibility).toFixed(2)}).`}));
+  const right = el("div",{},[el("h3",{style:"font-size:13px;color:var(--muted);margin-bottom:8px",text:"Trust it shows vs. earned"}),
+    el("div",{class:"bars"},[...bar("Apparent trust",s.C_apparent,"#9bb6e6"),...bar("Earned trust",s.C_earned,"var(--accent)"),
+      ...bar("Behaviour",Math.min(s.T3??1,s.T4??1,s.T5??1),"#9aa3b0"),...bar("CSBI-PA",s.CSBI_PA,"var(--danger)",100)])]);
+  out.replaceChildren(head,host,el("div",{class:"grid2",style:"gap:28px"},[left,right]));
+}
+
+async function fillResults(){
+  let d; try{ d = lastResults = await getJSON("/results/summary"); }catch{ d=null; }
+  if (!d || !d.rows || !d.rows.length){ $("#cv").replaceChildren(el("tbody",{},[el("tr",{},[el("td",{class:"empty",text:"No results yet — run the training step to populate this."})])])); return; }
+  $("#res-headline").textContent = `${d.dataset.n.toLocaleString()} pages — ${d.dataset.n_phish.toLocaleString()} phishing, ${d.dataset.n_legit.toLocaleString()} legitimate (${d.dataset.n_free_hosted.toLocaleString()} free-hosted). XGBoost.`;
+  const seg = $("#subsetseg");
+  if (seg) seg.replaceChildren(...[["free_hosted","Free-hosted"],["all","All pages"],["self_hosted","Self-hosted"]].map(([k,lab],i)=>{
+    const b = el("button",{text:lab}); b.classList.toggle("on",i===0);
+    b.onclick=()=>{ seg.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); renderResTable(k,d.rows); };
+    return b; }));
+  renderResTable("free_hosted", d.rows);
+  const figs = new Set(d.figures||[]);
+  const add = (host, names) => { const c=$(host); if(!c) return; c.replaceChildren(...names.filter(n=>figs.has(n)).map(n=>el("img",{src:`/results/figures/${n}`,loading:"lazy",alt:n}))); };
+  add("#res-charts",["fig1_recall_by_subset.png","fig2_roc_free_hosted.png","fig1_f1_by_subset.png","fig1_tpr_at_1fpr_by_subset.png"]);
+  add("#res-ablation",["fig5_shap_importance.png","fig3_label_efficiency_all.png","fig4_borrowed_credibility.png","fig3_label_efficiency_free_hosted.png"]);
+}
+function renderResTable(subset, rows){
+  const order=["B2_tbdf","B1_url","B3_url_html","B4_csbi","OURS"];
+  const r = rows.filter(x=>x.subset===subset && order.includes(x.features)).sort((a,b)=>order.indexOf(a.features)-order.indexOf(b.features));
+  const head = el("tr",{},["Feature set","Precision","Recall","F1","ROC-AUC","TPR @1% FPR"].map((t,i)=>el("th",{class:i?"n":"",text:t})));
+  const body = r.map(x=>el("tr",{class:x.features==="OURS"?"ours":(x.features==="B2_tbdf"?"base":"")},[
+    el("td",{text:NAMES[x.features]||x.features}),
+    ...["precision","recall","f1","roc_auc","tpr_at_1fpr"].map(k=>el("td",{class:"n",text:(+x[k]).toFixed(3)}))]));
+  $("#cv").replaceChildren(el("thead",{},[head]),el("tbody",{},body));
+  // subset switch via the Results sub-tabs isn't wired to table; keep free_hosted as the headline
+}
+
+async function fillCampaigns(){ await Promise.all([campaignMap(), campaignList()]); }
+async function campaignList(){
+  let c; try{ c = await getJSON("/campaigns"); }catch{ c=[]; }
+  const t = $("#camps"); if(!t) return;
+  if(!c.length){ t.replaceChildren(el("tbody",{},[el("tr",{},[el("td",{class:"empty",text:"No campaigns yet."})])])); return; }
+  t.replaceChildren(el("thead",{},[el("tr",{},["#","Campaign","Pages","Example"].map((h,i)=>el("th",{class:i===2?"n":"",text:h})))]),
+    el("tbody",{},c.slice(0,40).map(x=>el("tr",{},[el("td",{class:"mono muted",text:x.cluster_id}),el("td",{text:x.label}),
+      el("td",{class:"n",text:x.size}),el("td",{class:"mono",style:"max-width:420px;overflow:hidden;text-overflow:ellipsis",text:x.example})]))));
+}
+const SVGNS="http://www.w3.org/2000/svg";
+function sel(tag,a){ const e=document.createElementNS(SVGNS,tag); for(const[k,v]of Object.entries(a))e.setAttribute(k,v); return e; }
+async function campaignMap(){
+  let d; try{ d = await getJSON("/campaign_map"); }catch{ return; }
+  const svg=$("#map"); if(!svg) return;
+  if(!d.points||d.points.length<3) return;
+  const W=640,H=460,pad=20; $("#maphint").style.display="none"; svg.style.display="block"; svg.replaceChildren();
+  const xs=d.points.map(p=>p.x), ys=d.points.map(p=>p.y);
+  const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
+  const sx=x=>pad+(W-2*pad)*(x-xmin)/(xmax-xmin||1), sy=y=>pad+(H-2*pad)*(y-ymin)/(ymax-ymin||1);
+  const colour={},meta={}; (d.campaigns||[]).forEach(c=>{colour[c.id]=c.color;meta[c.id]=c;});
+  for(const p of d.points){
+    const c=sel("circle",{cx:sx(p.x).toFixed(1),cy:sy(p.y).toFixed(1),r:p.c<0?2.4:4,
+      fill:p.c<0?(d.noise_color||"#c7c6c1"):(colour[p.c]||"#c7c6c1"),"fill-opacity":p.c<0?0.45:0.85});
+    const m=meta[p.c],t=sel("title",{}); t.textContent=p.c<0?"unclustered page":`${m?m.brand:"campaign"} · ${m?m.platforms.join("/"):""} (${m?m.size:"?"} pages)`;
+    c.appendChild(t); svg.appendChild(c);
   }
-  const named = (d.campaigns || []).filter((c) => c.color && c.color !== (d.noise_color || "#c7c6c1")).slice(0, 10);
-  $("maplegend").replaceChildren(...named.map((c) => el("span", {}, [
-    (() => { const i = document.createElement("i"); i.style.background = c.color; return i; })(),
-    el("span", { text: `${c.brand} · ${c.platforms.join("/") || "mixed"} (${c.size})` }),
-  ])));
+  const named=(d.campaigns||[]).filter(c=>c.color&&c.color!==(d.noise_color||"#c7c6c1")).slice(0,10);
+  $("#maplegend").replaceChildren(...named.map(c=>el("span",{},[
+    (()=>{const i=document.createElement("i");i.style.background=c.color;return i;})(),
+    el("span",{text:`${c.brand} · ${c.platforms.join("/")||"mixed"} (${c.size})`})])));
 }
-async function ct() {
-  let rows; try { rows = await (await fetch("/ct_candidates")).json(); } catch { return; }
-  const t = document.getElementById("ct");
-  if (!rows.length) { t.replaceChildren(el("tr", {}, [el("td", { class: "muted", text: "No zero-day candidates yet — the CT monitor fills this as certificates are issued." })])); return; }
-  t.replaceChildren(
-    el("thead", {}, [el("tr", {}, ["Risk", "Domain", "Brand", "Why flagged", "Seen"].map((h) => el("th", { text: h })))]),
-    el("tbody", {}, rows.map((r) => el("tr", {}, [
-      el("td", {}, [el("span", { class: `lvl ${r.risk}`, style: "font-size:13px", text: r.risk })]),
-      el("td", { class: "mono", text: r.host }),
-      el("td", { text: (r.brand || "").replace(/^./, (c) => c.toUpperCase()) }),
-      el("td", { text: r.reason }),
-      el("td", { class: "muted", text: (r.seen_at || "").replace("T", " ").slice(0, 16) }),
-    ]))));
+async function fillZeroday(){
+  let rows; try{ rows = await getJSON("/ct_candidates"); }catch{ rows=[]; }
+  const t=$("#ct"); if(!t) return;
+  if(!rows.length){ t.replaceChildren(el("tbody",{},[el("tr",{},[el("td",{class:"empty",text:"No zero-day candidates yet — the CT monitor fills this as certificates are issued."})])])); return; }
+  t.replaceChildren(el("thead",{},[el("tr",{},["Risk","Domain","Brand","Why flagged","Seen"].map(h=>el("th",{text:h})))]),
+    el("tbody",{},rows.map(r=>el("tr",{},[
+      el("td",{},[el("span",{class:`tag`,style:`background:${r.risk==="HIGH"?"var(--danger-soft)":"var(--warn-soft)"};color:${r.risk==="HIGH"?"var(--danger)":"var(--warn)"}`,text:r.risk})]),
+      el("td",{class:"mono",text:r.host}),el("td",{text:(r.brand||"").replace(/^./,c=>c.toUpperCase())}),
+      el("td",{class:"muted",text:r.reason}),el("td",{class:"muted",text:(r.seen_at||"").replace("T"," ").slice(0,16)})]))));
 }
-results(); camps(); stats(); ct(); campaignMap(); setInterval(() => { stats(); campaignMap(); camps(); ct(); }, 60000);
+
+const RENDER = { overview:fillOverview, scan:fillScan, results:fillResults, campaigns:fillCampaigns, zeroday:fillZeroday };
+
+/* boot */
+(async function(){
+  await refreshStats();
+  try{ lastResults = await getJSON("/results/summary"); }catch{}
+  setTab("overview");
+  setInterval(refreshStats, 60000);
+})();
 </script>
 </body>
 </html>
