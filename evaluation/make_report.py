@@ -73,7 +73,7 @@ def fig_feature_sets(cv: pd.DataFrame, model="xgb", metric="recall"):
     style(ax)
     ax.legend(frameon=False, fontsize=8, ncol=2, loc="lower left", bbox_to_anchor=(0, 1.0))
     fig.tight_layout()
-    fig.savefig(FIG / f"fig1_{metric}_by_subset.png")
+    fig.savefig(FIG / f"fig1_{metric}_by_subset.svg")
     plt.close(fig)
 
 
@@ -99,7 +99,7 @@ def fig_roc(oof: pd.DataFrame, subset="free_hosted"):
     ax.legend(frameon=False, fontsize=8, loc="lower right")
     ax.set_title("Free-hosted pages" if subset == "free_hosted" else "All pages", color=INK, fontsize=10, loc="left")
     fig.tight_layout()
-    fig.savefig(FIG / f"fig2_roc_{subset}.png")
+    fig.savefig(FIG / f"fig2_roc_{subset}.svg")
     plt.close(fig)
 
 
@@ -124,7 +124,7 @@ def fig_label_efficiency(e2: pd.DataFrame, subset="all"):
     style(ax)
     ax.legend(frameon=False, fontsize=8, loc="lower right")
     fig.tight_layout()
-    fig.savefig(FIG / f"fig3_label_efficiency_{subset}.png")
+    fig.savefig(FIG / f"fig3_label_efficiency_{subset}.svg")
     plt.close(fig)
 
 
@@ -148,7 +148,7 @@ def fig_borrowed(df: pd.DataFrame):
         style(ax)
     axes[0].set_ylabel("Score (0-1)", color=MUTED, fontsize=9)
     fig.tight_layout()
-    fig.savefig(FIG / "fig4_borrowed_credibility.png")
+    fig.savefig(FIG / "fig4_borrowed_credibility.svg")
     plt.close(fig)
 
 
@@ -175,7 +175,7 @@ def fig_shap(df: pd.DataFrame):
     ax.yaxis.grid(False)
     ax.set_title("Blue = new platform-aware features", color=MUTED, fontsize=9, loc="left")
     fig.tight_layout()
-    fig.savefig(FIG / "fig5_shap_importance.png")
+    fig.savefig(FIG / "fig5_shap_importance.svg")
     plt.close(fig)
     return imp
 
@@ -314,7 +314,7 @@ def main() -> None:
         md.append(f"_(campaign map skipped: {e})_\n")
 
     md.append("## Figures\n")
-    for p in sorted(FIG.glob("*.png")):
+    for p in sorted(FIG.glob("*.svg")):
         md.append(f"![{p.stem}](figures/{p.name})")
     (RES / "REPORT.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     print(f"wrote {RES / 'REPORT.md'} and {len(list(FIG.glob('*.png')))} figures")

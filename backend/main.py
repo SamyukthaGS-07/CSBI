@@ -208,7 +208,7 @@ def results_summary():
         out["rows"] = sorted(rows, key=lambda r: (order.get(r["subset"], 9), r["features"]))
     figs = res / "figures"
     if figs.exists():
-        out["figures"] = sorted(p.name for p in figs.glob("*.png"))
+        out["figures"] = sorted(p.name for p in list(figs.glob("*.svg")) + list(figs.glob("*.png")))
     return out
 
 

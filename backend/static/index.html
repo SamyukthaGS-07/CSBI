@@ -347,9 +347,9 @@ async function fillResults(){
   renderResTable("free_hosted", d.rows);
   // Distribute EVERY result figure so nothing is lost.
   const avail = new Set(d.figures||[]);
-  const chartNames = ["fig1_recall_by_subset.png","fig2_roc_free_hosted.png","fig1_f1_by_subset.png","fig2_roc_all.png","fig1_tpr_at_1fpr_by_subset.png"];
-  const ablNames = ["fig5_shap_importance.png","fig4_borrowed_credibility.png","fig3_label_efficiency_all.png","fig3_label_efficiency_free_hosted.png"];
-  const placed = new Set([...chartNames, ...ablNames, "fig_campaign_map.png", "fig_campaign_bars.png"]);
+  const chartNames = ["fig1_recall_by_subset.svg","fig2_roc_free_hosted.svg","fig1_f1_by_subset.svg","fig2_roc_all.svg","fig1_tpr_at_1fpr_by_subset.svg"];
+  const ablNames = ["fig5_shap_importance.svg","fig4_borrowed_credibility.svg","fig3_label_efficiency_all.svg","fig3_label_efficiency_free_hosted.svg"];
+  const placed = new Set([...chartNames, ...ablNames, "fig_campaign_map.svg", "fig_campaign_bars.svg"]);
   const extra = (d.figures||[]).filter(n=>!placed.has(n));   // any figure we didn't name explicitly
   figCards("#res-charts", [...chartNames, ...extra], avail);
   figCards("#res-ablation", ablNames, avail);
@@ -368,7 +368,7 @@ async function fillCampaigns(){ await Promise.all([campaignMap(), campaignList()
 async function campaignList(){
   // keep the largest-campaigns bar figure here too, so no graph is lost
   try{ const figs = (lastResults && lastResults.figures) || []; const bars=$("#camps-bars");
-    if (bars && figs.includes("fig_campaign_bars.png")){ bars.style.display="block"; bars.replaceChildren(el("img",{src:"/results/figures/fig_campaign_bars.png",alt:"largest campaigns"})); }
+    if (bars && figs.includes("fig_campaign_bars.svg")){ bars.style.display="block"; bars.replaceChildren(el("img",{src:"/results/figures/fig_campaign_bars.svg",alt:"largest campaigns"})); }
   }catch{}
   let c; try{ c = await getJSON("/campaigns"); }catch{ c=[]; }
   const t = $("#camps"); if(!t) return;

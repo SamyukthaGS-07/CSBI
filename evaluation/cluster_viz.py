@@ -121,7 +121,7 @@ def build(store_path: str, out: Path, eps: float, snapshots: str) -> dict:
     ax.legend(frameon=False, fontsize=8, loc="center left", bbox_to_anchor=(1.0, 0.5),
               title="Largest campaigns", title_fontsize=9)
     fig.tight_layout()
-    fig.savefig(out / "figures" / "fig_campaign_map.png", bbox_inches="tight")
+    fig.savefig(out / "figures" / "fig_campaign_map.svg", bbox_inches="tight")
     plt.close(fig)
 
     # ---- figure 2: biggest campaigns --------------------------------------
@@ -140,7 +140,7 @@ def build(store_path: str, out: Path, eps: float, snapshots: str) -> dict:
     _style(ax)
     ax.xaxis.grid(True, color=GRID)
     fig.tight_layout()
-    fig.savefig(out / "figures" / "fig_campaign_bars.png", bbox_inches="tight")
+    fig.savefig(out / "figures" / "fig_campaign_bars.svg", bbox_inches="tight")
     plt.close(fig)
 
     # ---- json for the interactive dashboard view (coords only, no URLs) ----
