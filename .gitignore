@@ -34,3 +34,6 @@ data/visualizations/
 !keys/snapshots_public.pem
 data/.asn_rate.lock
 results/ct_candidates.json
+
+# built docs (regenerate from the .md/.docx)
+docs/*.pdf
