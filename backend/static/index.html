@@ -6,149 +6,144 @@
 <title>CSBI-PA — Threat Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --canvas:#eef1f5; --surface:#ffffff; --surface-2:#f7f9fb;
-    --ink:#161c26; --muted:#5d6775; --faint:#8b94a3; --line:#e3e7ed;
-    --sidebar:#121a2e; --sidebar-2:#1b2540; --sidebar-ink:#c6cedd; --sidebar-faint:#7c88a0;
-    --accent:#2f6df6; --accent-soft:#e8f0ff;
-    --danger:#e5484d; --danger-soft:#fdecec; --warn:#c77700; --warn-soft:#fdf3e2;
-    --good:#2faa6b; --good-soft:#e7f6ee;
-    --shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px rgba(16,24,40,.06);
+    --canvas:#f4f5fb; --surface:#ffffff; --surface-2:#f7f8fc;
+    --ink:#1f2433; --muted:#6b7280; --faint:#9aa1ad; --line:#ecedf3;
+    --accent:#6c5ce7; --accent-2:#5b4bd6; --accent-soft:#efe9ff;
+    --danger:#ef4a63; --danger-soft:#fde8ec; --warn:#e8a13a; --warn-soft:#fdf2e1;
+    --good:#22b07d; --good-soft:#e3f7ef;
+    --chip-v:#7c5cfc; --chip-v-bg:#efe9ff; --chip-m:#22b07d; --chip-m-bg:#e3f7ef;
+    --chip-a:#e8a13a; --chip-a-bg:#fdf2e1; --chip-r:#e5588a; --chip-r-bg:#fde8ee;
+    --shadow:0 2px 10px rgba(31,36,51,.05), 0 1px 2px rgba(31,36,51,.03);
+    --radius:16px;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
-  body{background:var(--canvas);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:14px;line-height:1.5;display:flex}
+  body{background:var(--canvas);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:14px;line-height:1.5;display:flex}
   .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
-  a{color:inherit}
   h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
 
-  /* ---- sidebar ---- */
-  .side{width:244px;flex-shrink:0;background:var(--sidebar);color:var(--sidebar-ink);
+  /* sidebar */
+  .side{width:244px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--line);
     display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
-  .brand{padding:22px 22px 18px;display:flex;align-items:center;gap:11px}
-  .brand .mark{width:30px;height:30px;flex-shrink:0}
-  .brand b{color:#fff;font-size:16px;font-weight:700;letter-spacing:-.02em;display:block}
-  .brand span{color:var(--sidebar-faint);font-size:11px}
-  .nav{padding:8px 12px;display:flex;flex-direction:column;gap:2px}
-  .nav button{all:unset;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;
-    color:var(--sidebar-ink);font-size:14px;cursor:pointer;transition:background .12s}
-  .nav button:hover{background:var(--sidebar-2)}
-  .nav button.on{background:var(--accent);color:#fff;font-weight:600}
-  .nav button.on svg{opacity:1}
-  .nav svg{width:17px;height:17px;flex-shrink:0;opacity:.72}
+  .brand{padding:22px 22px 16px;display:flex;align-items:center;gap:11px}
+  .brand .mark{width:34px;height:34px;flex-shrink:0}
+  .brand b{font-size:16px;font-weight:700;letter-spacing:-.02em;display:block}
+  .brand span{color:var(--faint);font-size:11px}
+  .nav{padding:8px 14px;display:flex;flex-direction:column;gap:3px}
+  .nav button{all:unset;display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;
+    color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:all .14s}
+  .nav button:hover{background:var(--surface-2);color:var(--ink)}
+  .nav button.on{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(108,92,231,.3)}
+  .nav svg{width:18px;height:18px;flex-shrink:0}
   .side .spacer{flex:1}
-  .statuscard{margin:12px;padding:13px 14px;background:var(--sidebar-2);border-radius:11px}
-  .statuscard .row{display:flex;align-items:center;gap:8px;color:#fff;font-size:12.5px;font-weight:600}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(47,170,107,.6);animation:pulse 2s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,170,107,.5)}70%{box-shadow:0 0 0 7px rgba(47,170,107,0)}100%{box-shadow:0 0 0 0 rgba(47,170,107,0)}}
-  .statuscard .nums{margin-top:9px;color:var(--sidebar-faint);font-size:12px;line-height:1.7}
-  .statuscard .nums b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums}
+  .statuscard{margin:14px;padding:15px;border-radius:14px;background:linear-gradient(135deg,#efe9ff,#e8f7f0)}
+  .statuscard .row{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(34,176,125,.6);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,176,125,.5)}70%{box-shadow:0 0 0 7px rgba(34,176,125,0)}100%{box-shadow:0 0 0 0 rgba(34,176,125,0)}}
+  .statuscard .nums{margin-top:9px;color:var(--muted);font-size:12px;line-height:1.7}
+  .statuscard .nums b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
 
-  /* ---- main ---- */
+  /* main */
   .main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-  .head{background:var(--surface);border-bottom:1px solid var(--line);padding:20px 32px 0;flex-shrink:0}
+  .head{background:var(--canvas);padding:24px 34px 0;flex-shrink:0}
   .head .titlerow{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
-  .head h1{font-size:21px}
-  .head .desc{color:var(--muted);font-size:13.5px;margin-top:4px;max-width:70ch}
-  .livepill{display:inline-flex;align-items:center;gap:7px;background:var(--surface-2);border:1px solid var(--line);
-    border-radius:999px;padding:6px 13px;font-size:12.5px;color:var(--muted);white-space:nowrap}
-  .subtabs{display:flex;gap:2px;margin-top:16px}
-  .subtabs button{all:unset;padding:10px 15px;font-size:13.5px;color:var(--muted);cursor:pointer;
-    border-bottom:2px solid transparent;margin-bottom:-1px}
+  .head h1{font-size:22px;font-weight:700}
+  .head .desc{color:var(--muted);font-size:13.5px;margin-top:4px;max-width:72ch}
+  .livepill{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);
+    border-radius:999px;padding:7px 14px;font-size:12.5px;color:var(--muted);white-space:nowrap;box-shadow:var(--shadow)}
+  .subtabs{display:flex;gap:4px;margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;width:fit-content;box-shadow:var(--shadow)}
+  .subtabs button{all:unset;padding:8px 16px;font-size:13.5px;color:var(--muted);cursor:pointer;border-radius:9px;font-weight:500}
   .subtabs button:hover{color:var(--ink)}
-  .subtabs button.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
-  .scroll{overflow:auto;padding:26px 32px 40px;flex:1}
+  .subtabs button.on{background:var(--accent-soft);color:var(--accent-2);font-weight:600}
+  .scroll{overflow:auto;padding:24px 34px 44px;flex:1}
 
-  .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
-  .panel .ph{padding:16px 20px;border-bottom:1px solid var(--line)}
-  .panel .ph h2{font-size:15px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .panel .ph{padding:18px 22px;border-bottom:1px solid var(--line)}
+  .panel .ph h2{font-size:15.5px}
   .panel .ph p{margin:3px 0 0;color:var(--muted);font-size:12.5px}
-  .pb{padding:20px}
+  .pb{padding:22px}
 
   /* kpi */
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
-  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-  .kpi .v{font-size:30px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
-  .kpi .k{color:var(--muted);font-size:12.5px;margin-top:5px}
-  .kpi .accent{position:absolute;left:0;top:0;bottom:0;width:3px}
-  .kpi.p .accent{background:var(--danger)} .kpi.l .accent{background:var(--good)}
-  .kpi.c .accent{background:var(--accent)} .kpi.r .accent{background:var(--warn)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+    box-shadow:var(--shadow);display:flex;align-items:center;gap:15px}
+  .kpi .chip{width:48px;height:48px;border-radius:13px;flex-shrink:0;display:grid;place-items:center}
+  .kpi .chip svg{width:23px;height:23px}
+  .kpi .v{font-size:27px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.05}
+  .kpi .k{color:var(--muted);font-size:12.5px;margin-top:3px}
+  .c-v{background:var(--chip-r-bg);color:var(--danger)} .c-l{background:var(--chip-m-bg);color:var(--chip-m)}
+  .c-c{background:var(--chip-v-bg);color:var(--chip-v)} .c-r{background:var(--chip-a-bg);color:var(--chip-a)}
 
-  .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+  .grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}
   @media(max-width:1040px){.grid2{grid-template-columns:1fr}}
+  .stack>*+*{margin-top:18px}
 
-  /* free-hosted bar */
-  .fhbar{height:30px;border-radius:7px;overflow:hidden;display:flex;margin:6px 0 10px}
-  .fhbar .free{background:var(--danger)} .fhbar .self{background:#c3cbd6}
-  .fhbar div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600}
-  .legendline{display:flex;gap:18px;color:var(--muted);font-size:12.5px}
-  .legendline i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .fhbar{height:34px;border-radius:10px;overflow:hidden;display:flex;margin:4px 0 12px}
+  .fhbar .free{background:var(--danger)} .fhbar .self{background:#cbd2de}
+  .fhbar div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12.5px;font-weight:600}
+  .legendline{display:flex;gap:18px;color:var(--muted);font-size:12.5px;flex-wrap:wrap}
+  .legendline i{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:6px;vertical-align:-1px}
 
-  /* tables */
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
-  thead th{color:var(--faint);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:var(--surface-2)}
+  th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+  thead th{color:var(--faint);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
   td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
   tbody tr:last-child td{border-bottom:0}
-  tr.ours td{background:var(--accent-soft);font-weight:600}
+  tbody tr:hover td{background:var(--surface-2)}
+  tr.ours td{background:var(--accent-soft)!important;font-weight:600}
   tr.base td{color:var(--danger)}
-  .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
-  .tag.win{background:var(--good-soft);color:var(--good)}
-  .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px}
-  .seg button{all:unset;padding:6px 13px;font-size:12.5px;color:var(--muted);cursor:pointer;border-radius:7px}
-  .seg button.on{background:#fff;color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(16,24,40,.08)}
+  .tag{display:inline-block;padding:3px 9px;border-radius:7px;font-size:11px;font-weight:600}
+  .seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .seg button{all:unset;padding:6px 14px;font-size:12.5px;color:var(--muted);cursor:pointer;border-radius:8px}
+  .seg button.on{background:var(--surface);color:var(--accent-2);font-weight:600;box-shadow:var(--shadow)}
 
-  /* scan */
   .scanbox{display:flex;gap:10px;flex-wrap:wrap}
-  .scanbox input{flex:1 1 340px;min-width:0;padding:12px 14px;font:inherit;border:1px solid var(--line);
-    border-radius:10px;background:var(--surface-2)}
+  .scanbox input{flex:1 1 340px;min-width:0;padding:13px 15px;font:inherit;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
   .scanbox input:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff}
-  .btn{all:unset;background:var(--accent);color:#fff;font-weight:600;padding:12px 20px;border-radius:10px;cursor:pointer;text-align:center}
-  .btn:hover{background:#2a61da}
+  .btn{all:unset;background:var(--accent);color:#fff;font-weight:600;padding:13px 22px;border-radius:12px;cursor:pointer;text-align:center;box-shadow:0 6px 16px rgba(108,92,231,.28)}
+  .btn:hover{background:var(--accent-2)}
   .verdict{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:4px}
-  .riskbadge{font-size:17px;font-weight:700;padding:6px 14px;border-radius:9px}
+  .riskbadge{font-size:17px;font-weight:700;padding:7px 15px;border-radius:11px}
   .riskbadge.HIGH{background:var(--danger-soft);color:var(--danger)}
   .riskbadge.MEDIUM{background:var(--warn-soft);color:var(--warn)}
   .riskbadge.LOW{background:var(--good-soft);color:var(--good)}
   .prob{color:var(--muted);font-variant-numeric:tabular-nums}
-  .reasons{margin:10px 0 0;padding-left:18px}
-  .reasons li{margin:5px 0}
-  .callout{background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:10px 13px;margin-top:12px;font-size:13px}
-  .bars{display:grid;grid-template-columns:120px 1fr 46px;gap:9px 11px;align-items:center;margin-top:4px}
-  .track{height:9px;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;overflow:hidden}
-  .fill{height:100%}
+  .reasons{margin:10px 0 0;padding-left:18px} .reasons li{margin:5px 0}
+  .callout{background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:11px 14px;margin-top:12px;font-size:13px}
+  .bars{display:grid;grid-template-columns:120px 1fr 46px;gap:10px 12px;align-items:center;margin-top:4px}
+  .track{height:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .fill{height:100%;border-radius:6px}
   .num{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px}
 
-  /* figures */
-  .figrow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .figrow{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   @media(max-width:1040px){.figrow{grid-template-columns:1fr}}
-  .figrow img, .figwide img{width:100%;display:block;border-radius:10px;border:1px solid var(--line);background:#fff}
+  .figcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:10px}
+  .figcard img{width:100%;display:block;border-radius:10px}
 
-  /* campaign map */
-  #map{width:100%;height:auto;background:#fbfcfe;border:1px solid var(--line);border-radius:12px}
+  #map{width:100%;height:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:12px}
   #map circle{transition:r .1s} #map circle:hover{stroke:var(--ink);stroke-width:1.4}
-  .maplegend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px}
+  .maplegend{display:flex;flex-wrap:wrap;gap:9px 16px;margin-top:14px}
   .maplegend span{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
   .maplegend i{width:11px;height:11px;border-radius:50%}
 
-  .muted{color:var(--muted)}
-  .empty{color:var(--faint);padding:28px;text-align:center}
+  .muted{color:var(--muted)} .empty{color:var(--faint);padding:30px;text-align:center}
   .hidden{display:none !important}
 
   @media(max-width:860px){
     body{flex-direction:column}
     .side{width:100%;height:auto;position:static;flex-direction:row;align-items:center;overflow-x:auto}
     .brand{padding:14px 16px}.nav{flex-direction:row;padding:8px}.side .spacer,.statuscard{display:none}
-    .scroll{padding:20px 16px 40px}.kpis{grid-template-columns:repeat(2,1fr)}
+    .scroll,.head{padding-left:16px;padding-right:16px}.kpis{grid-template-columns:repeat(2,1fr)}
   }
 </style>
 </head>
 <body>
 <aside class="side">
   <div class="brand">
-    <svg class="mark" viewBox="0 0 32 32" fill="none"><path d="M16 2l12 4.5v8.2c0 7.6-5 13-12 15.3-7-2.3-12-7.7-12-15.3V6.5L16 2z" fill="#2f6df6"/><path d="M10.5 16.2l3.7 3.8 7.3-7.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg class="mark" viewBox="0 0 34 34" fill="none"><rect width="34" height="34" rx="9" fill="#6c5ce7"/><path d="M17 6l9 3.3v6.1c0 5.7-3.7 9.8-9 11.5-5.3-1.7-9-5.8-9-11.5V9.3L17 6z" fill="#fff" fill-opacity=".18"/><path d="M12 17.2l3.4 3.4 6.6-6.9" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <div><b>CSBI-PA</b><span>Threat Console</span></div>
   </div>
   <nav class="nav" id="nav">
@@ -178,16 +173,16 @@
 
 <template id="tpl-overview">
   <div class="kpis">
-    <div class="kpi p"><span class="accent"></span><div class="v" data-kpi="phishing">—</div><div class="k">Phishing pages captured</div></div>
-    <div class="kpi l"><span class="accent"></span><div class="v" data-kpi="legit">—</div><div class="k">Legitimate pages</div></div>
-    <div class="kpi c"><span class="accent"></span><div class="v" data-kpi="campaigns">—</div><div class="k">Campaigns discovered</div></div>
-    <div class="kpi r"><span class="accent"></span><div class="v" data-kpi="phishing_last_24h">—</div><div class="k">Phishing, last 24 h</div></div>
+    <div class="kpi"><div class="chip c-v"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-3z" stroke-linejoin="round"/><path d="M12 8v4M12 15v.5" stroke-linecap="round"/></svg></div><div><div class="v" data-kpi="phishing">—</div><div class="k">Phishing pages captured</div></div></div>
+    <div class="kpi"><div class="chip c-l"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="v" data-kpi="legit">—</div><div class="k">Legitimate pages</div></div></div>
+    <div class="kpi"><div class="chip c-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="7" r="2.3"/><circle cx="18" cy="8" r="2.3"/><circle cx="12" cy="17" r="2.3"/><path d="M8 8l8 .6M8 9l3.5 6.5M16 10l-3.5 5.5"/></svg></div><div><div class="v" data-kpi="campaigns">—</div><div class="k">Campaigns discovered</div></div></div>
+    <div class="kpi"><div class="chip c-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="v" data-kpi="phishing_last_24h">—</div><div class="k">Phishing, last 24 h</div></div></div>
   </div>
   <div class="grid2">
     <div class="panel"><div class="ph"><h2>The free-hosted blind spot</h2><p>Where phishing hides, and where the base-paper features stop working.</p></div>
       <div class="pb">
         <div class="fhbar" id="fhbar"></div>
-        <div class="legendline"><span><i style="background:var(--danger)"></i>Free-hosted (pages.dev, vercel.app, …)</span><span><i style="background:#c3cbd6"></i>Self-hosted</span></div>
+        <div class="legendline"><span><i style="background:var(--danger)"></i>Free-hosted (pages.dev, vercel.app, …)</span><span><i style="background:#cbd2de"></i>Self-hosted</span></div>
         <p class="muted" id="fhnote" style="margin:14px 0 0;font-size:13px"></p>
       </div>
     </div>
@@ -201,7 +196,7 @@
 </template>
 
 <template id="tpl-scan">
-  <div class="panel" style="max-width:860px">
+  <div class="panel" style="max-width:880px">
     <div class="ph"><h2>Check a site</h2><p>Enter a URL. The engine fetches the page, its certificate and WHOIS, and returns a verdict with the reasons.</p></div>
     <div class="pb">
       <form class="scanbox" id="scanform">
@@ -214,7 +209,7 @@
 </template>
 
 <template id="tpl-results">
-  <div id="res-headline" class="muted" style="margin:-6px 0 18px;font-size:13px"></div>
+  <div id="res-headline" class="muted" style="margin:-4px 0 18px;font-size:13px"></div>
   <div data-sub="table" class="panel"><div class="ph" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div><h2>Detection — model comparison</h2><p>Campaign-disjoint 5-fold cross-validation.</p></div>
       <div class="seg" id="subsetseg"></div></div>
@@ -228,8 +223,11 @@
     <div class="pb"><p class="empty" id="maphint">No campaigns yet — this fills in once phishing pages are scanned and clustered.</p>
       <svg id="map" viewBox="0 0 640 460" role="img" aria-label="Phishing pages grouped by kit" style="display:none"></svg>
       <div class="maplegend" id="maplegend"></div></div></div>
-  <div data-sub="list" class="hidden panel"><div class="ph"><h2>Campaigns</h2><p>Largest campaigns by page count, with the brand and platforms they abuse.</p></div>
-    <div style="overflow:auto"><table id="camps"></table></div></div>
+  <div data-sub="list" class="hidden stack">
+    <div class="figcard" id="camps-bars" style="display:none"></div>
+    <div class="panel"><div class="ph"><h2>Campaigns</h2><p>Largest campaigns by page count, with the brand and platforms they abuse.</p></div>
+      <div style="overflow:auto"><table id="camps"></table></div></div>
+  </div>
 </template>
 
 <template id="tpl-zeroday">
@@ -248,12 +246,11 @@ function el(tag, attrs = {}, kids = []) {
 }
 const NAMES = { B1_url:"URL only", B2_tbdf:"TBDF (Mishra & Varshney 2025)", B3_url_html:"URL + HTML",
   B4_csbi:"CSBI layers 1-4", OURS:"CSBI-PA (ours)" };
-
 const TABS = {
   overview:{title:"Overview", desc:"Live state of the detection system and the problem it targets."},
   scan:{title:"Scan a URL", desc:"Score any site in real time."},
   results:{title:"Results", desc:"How CSBI-PA compares with the base paper and the baselines, on real data.",
-    subs:[["table","Comparison"],["charts","Charts"],["ablation","Ablation"]]},
+    subs:[["table","Comparison"],["charts","Charts"],["ablation","Ablation & SHAP"]]},
   campaigns:{title:"Campaigns", desc:"Phishing kits reused across many pages, grouped automatically.",
     subs:[["map","Map"],["list","List"]]},
   zeroday:{title:"Zero-day watch", desc:"New brand-impersonation domains caught from Certificate Transparency."},
@@ -269,7 +266,7 @@ function setTab(name){
   if (t.subs){ st.classList.remove("hidden"); st.replaceChildren(...t.subs.map(([k,label],i)=>{
     const b = el("button",{text:label}); b.classList.toggle("on", i===0); b.onclick=()=>setSub(name,k,b); return b; }));
   } else st.classList.add("hidden");
-  const scroll = $("#scroll"); scroll.replaceChildren($("#tpl-"+name).content.cloneNode(true));
+  $("#scroll").replaceChildren($("#tpl-"+name).content.cloneNode(true));
   RENDER[name] && RENDER[name]();
 }
 function setSub(tab, key, btn){
@@ -278,7 +275,6 @@ function setSub(tab, key, btn){
 }
 $("#nav").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setTab(b.dataset.tab); });
 
-/* ---------- data ---------- */
 async function getJSON(u){ const r = await fetch(u); if(!r.ok) throw new Error(r.status); return r.json(); }
 
 async function refreshStats(){
@@ -288,7 +284,6 @@ async function refreshStats(){
   $("#pill").textContent = `${(s.phishing||0).toLocaleString()} phishing · ${(s.campaigns||0).toLocaleString()} campaigns`;
   if (current === "overview") fillOverview();
 }
-
 function fillOverview(){
   const s = lastStats || {};
   document.querySelectorAll("[data-kpi]").forEach(e=>{ const v = s[e.dataset.kpi]; e.textContent = v==null?"—":Number(v).toLocaleString(); });
@@ -297,8 +292,7 @@ function fillOverview(){
     const free = d.n_free_hosted, self = Math.max(0, d.n_phish + d.n_legit - free);
     const total = free + self || 1, fp = Math.round(100*free/total);
     const bar = $("#fhbar"); if (bar){
-      bar.replaceChildren(
-        el("div",{class:"free",style:`width:${fp}%`,text:fp>8?fp+"%":""}),
+      bar.replaceChildren(el("div",{class:"free",style:`width:${fp}%`,text:fp>8?fp+"%":""}),
         el("div",{class:"self",style:`width:${100-fp}%`,text:(100-fp)>8?(100-fp)+"%":""}));
       $("#fhnote").textContent = `${free.toLocaleString()} of the ${total.toLocaleString()} pages sit on shared free-hosting platforms. Across two years of OpenPhish history the share is 42.9% — the subset the base paper's certificate and domain features cannot read.`;
     }
@@ -337,6 +331,10 @@ function renderVerdict(out, v){
   out.replaceChildren(head,host,el("div",{class:"grid2",style:"gap:28px"},[left,right]));
 }
 
+function figCards(host, names, available){
+  const c = $(host); if(!c) return;
+  c.replaceChildren(...names.filter(n=>available.has(n)).map(n=>el("div",{class:"figcard"},[el("img",{src:`/results/figures/${n}`,loading:"lazy",alt:n})])));
+}
 async function fillResults(){
   let d; try{ d = lastResults = await getJSON("/results/summary"); }catch{ d=null; }
   if (!d || !d.rows || !d.rows.length){ $("#cv").replaceChildren(el("tbody",{},[el("tr",{},[el("td",{class:"empty",text:"No results yet — run the training step to populate this."})])])); return; }
@@ -347,10 +345,14 @@ async function fillResults(){
     b.onclick=()=>{ seg.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); renderResTable(k,d.rows); };
     return b; }));
   renderResTable("free_hosted", d.rows);
-  const figs = new Set(d.figures||[]);
-  const add = (host, names) => { const c=$(host); if(!c) return; c.replaceChildren(...names.filter(n=>figs.has(n)).map(n=>el("img",{src:`/results/figures/${n}`,loading:"lazy",alt:n}))); };
-  add("#res-charts",["fig1_recall_by_subset.png","fig2_roc_free_hosted.png","fig1_f1_by_subset.png","fig1_tpr_at_1fpr_by_subset.png"]);
-  add("#res-ablation",["fig5_shap_importance.png","fig3_label_efficiency_all.png","fig4_borrowed_credibility.png","fig3_label_efficiency_free_hosted.png"]);
+  // Distribute EVERY result figure so nothing is lost.
+  const avail = new Set(d.figures||[]);
+  const chartNames = ["fig1_recall_by_subset.png","fig2_roc_free_hosted.png","fig1_f1_by_subset.png","fig2_roc_all.png","fig1_tpr_at_1fpr_by_subset.png"];
+  const ablNames = ["fig5_shap_importance.png","fig4_borrowed_credibility.png","fig3_label_efficiency_all.png","fig3_label_efficiency_free_hosted.png"];
+  const placed = new Set([...chartNames, ...ablNames, "fig_campaign_map.png", "fig_campaign_bars.png"]);
+  const extra = (d.figures||[]).filter(n=>!placed.has(n));   // any figure we didn't name explicitly
+  figCards("#res-charts", [...chartNames, ...extra], avail);
+  figCards("#res-ablation", ablNames, avail);
 }
 function renderResTable(subset, rows){
   const order=["B2_tbdf","B1_url","B3_url_html","B4_csbi","OURS"];
@@ -360,11 +362,14 @@ function renderResTable(subset, rows){
     el("td",{text:NAMES[x.features]||x.features}),
     ...["precision","recall","f1","roc_auc","tpr_at_1fpr"].map(k=>el("td",{class:"n",text:(+x[k]).toFixed(3)}))]));
   $("#cv").replaceChildren(el("thead",{},[head]),el("tbody",{},body));
-  // subset switch via the Results sub-tabs isn't wired to table; keep free_hosted as the headline
 }
 
 async function fillCampaigns(){ await Promise.all([campaignMap(), campaignList()]); }
 async function campaignList(){
+  // keep the largest-campaigns bar figure here too, so no graph is lost
+  try{ const figs = (lastResults && lastResults.figures) || []; const bars=$("#camps-bars");
+    if (bars && figs.includes("fig_campaign_bars.png")){ bars.style.display="block"; bars.replaceChildren(el("img",{src:"/results/figures/fig_campaign_bars.png",alt:"largest campaigns"})); }
+  }catch{}
   let c; try{ c = await getJSON("/campaigns"); }catch{ c=[]; }
   const t = $("#camps"); if(!t) return;
   if(!c.length){ t.replaceChildren(el("tbody",{},[el("tr",{},[el("td",{class:"empty",text:"No campaigns yet."})])])); return; }
@@ -376,8 +381,7 @@ const SVGNS="http://www.w3.org/2000/svg";
 function sel(tag,a){ const e=document.createElementNS(SVGNS,tag); for(const[k,v]of Object.entries(a))e.setAttribute(k,v); return e; }
 async function campaignMap(){
   let d; try{ d = await getJSON("/campaign_map"); }catch{ return; }
-  const svg=$("#map"); if(!svg) return;
-  if(!d.points||d.points.length<3) return;
+  const svg=$("#map"); if(!svg||!d.points||d.points.length<3) return;
   const W=640,H=460,pad=20; $("#maphint").style.display="none"; svg.style.display="block"; svg.replaceChildren();
   const xs=d.points.map(p=>p.x), ys=d.points.map(p=>p.y);
   const xmin=Math.min(...xs),xmax=Math.max(...xs),ymin=Math.min(...ys),ymax=Math.max(...ys);
@@ -406,8 +410,6 @@ async function fillZeroday(){
 }
 
 const RENDER = { overview:fillOverview, scan:fillScan, results:fillResults, campaigns:fillCampaigns, zeroday:fillZeroday };
-
-/* boot */
 (async function(){
   await refreshStats();
   try{ lastResults = await getJSON("/results/summary"); }catch{}
