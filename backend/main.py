@@ -169,6 +169,58 @@ def stats():
     return out
 
 
+_METRICS_CACHE = {"t": 0.0, "v": None}
+
+
+@app.get("/metrics")
+def metrics():
+    """Live operational metrics computed straight from the scan store, so the
+    charts move as new pages (feeds + CT monitor) are scanned. Cached 45 s."""
+    import sqlite3
+    import time as _t
+    from collections import Counter, defaultdict
+    if _METRICS_CACHE["v"] is not None and _t.time() - _METRICS_CACHE["t"] < 45:
+        return _METRICS_CACHE["v"]
+    db = ROOT / "data" / "store" / "scans.db"
+    out = {"daily": [], "platforms": [], "brands": [], "sources": [], "n": 0}
+    if db.exists():
+        from common.hosting import host_of, platform_of
+        con = sqlite3.connect(str(db))
+        con.row_factory = sqlite3.Row
+        daily = defaultdict(int)
+        plat, brand, source = Counter(), Counter(), Counter()
+        for r in con.execute("SELECT url, scan_timestamp, features FROM scans WHERE ground_truth='scam'"):
+            out["n"] += 1
+            try:
+                f = json.loads(r["features"]) if r["features"] else {}
+            except Exception:
+                f = {}
+            # first-seen date: feed listing date when known (spans the full history),
+            # otherwise the scan time
+            ts = (f.get("meta_listed_at") or r["scan_timestamp"] or "")[:10]
+            if ts:
+                daily[ts] += 1
+            p = platform_of(host_of(r["url"] or ""))
+            plat[p or "self-hosted"] += 1
+            b = f.get("_claimed_brand")
+            if b:
+                brand[b] += 1
+            source[f.get("meta_source") or "feed"] += 1
+        con.close()
+        days = sorted(daily)[-21:]
+        cum = 0
+        series = []
+        for d in days:
+            cum += daily[d]
+            series.append({"date": d, "count": daily[d], "cumulative": cum})
+        out["daily"] = series
+        out["platforms"] = [{"name": k, "count": v} for k, v in plat.most_common(8)]
+        out["brands"] = [{"name": k.title(), "count": v} for k, v in brand.most_common(8)]
+        out["sources"] = [{"name": k, "count": v} for k, v in source.most_common()]
+    _METRICS_CACHE.update(t=_t.time(), v=out)
+    return out
+
+
 @app.get("/campaigns")
 def campaigns():
     p = ROOT / "results" / "campaigns.json"
